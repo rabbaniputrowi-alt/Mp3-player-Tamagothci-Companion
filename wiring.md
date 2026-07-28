@@ -16,8 +16,8 @@ couldnt find a good software to create wiring diagrams on with all my components
 
 ## DFPlayer
 VCC -> 5V Rail
-RX -> 10k Ohm Resistor -> D5
-TX -> D6
+RX -> 10k Ohm Resistor -> D2
+TX -> D3
 DAC_R -> Ring (PJ_307)
 DAC_L -> Tip (PJ-307)
 GND -> GND Rail
@@ -36,7 +36,7 @@ GND -> GND Rail
 
 ## Tactile Buttons
 GND -> GND Rail
-+ side -> D2, D3, D4
++ side -> D6, D8, D11 (you can use any pins)
 
 ## Arduino Nano
 All of the connected list above plus
