@@ -3,7 +3,7 @@
 #pragma once
 #include <avr/pgmspace.h>
 
-#define ANIM_FRAME_DELAY_MS 125
+#define ANIM_FRAME_BYTES 1024
 #define ANIM_UNIQUE_COUNT  40
 
 const uint8_t PROGMEM anim_u000[] = { 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0x04, 0x00 };

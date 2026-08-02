@@ -116,7 +116,8 @@ enum Mode : uint8_t {
 
 Mode mode = MODE_IDLE;
 
-bool chainToMelody = false;
+bool chainToMelody = false;   // true while music_seq (the emblem forming) plays,
+                               // so we know to queue melody_seq next
 unsigned long nextIdleAt = 0;
 uint8_t affectionCount = 0;
 unsigned long lastAffectionAt = 0;
@@ -136,9 +137,9 @@ void setup() {
     pinMode(MUSIC, INPUT_PULLUP);
 
     Wire.begin();
-    Wire.setClock(400000)
+    Wire.setClock(400000);
 
-    if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS, true, false)) {
         Serial.println(F("SSD1306 allocation failed"));
         for (;;);
     }
@@ -152,6 +153,8 @@ void loop() {
 
     player.update();
 
+    // music_seq (notes -> emblem) plays first, then melody_seq -- swapped
+    // from before, since music/melody were showing in the wrong order.
     if (mode == MODE_TRANSITION && player.isDone()) {
         if (chainToMelody) {
             chainToMelody = false;
@@ -183,19 +186,19 @@ void loop() {
             lastAffectionAt = now;
             mode = MODE_INTERACTIVE;
             if (affectionCount >= AFF2_THRESHOLD) {
-                player.start(aff1_seq, AFF1_SEQ_LEN, AFF!_DELAY_MS);
+                player.start(aff1_seq, AFF1_SEQ_LEN, AFF1_DELAY_MS);
                 affectionCount = 0;
             } else {
                 player.start(aff_seq, AFF_SEQ_LEN, AFF_DELAY_MS);
             }
         } else if (winkPressed) {
             mode = MODE_INTERACTIVE;
-            player.start(wink_seq, WINK_SEQ_LEN);
+            player.start(wink_seq, WINK_SEQ_LEN, WINK_DELAY_MS);
         } else if (millis() >= nextIdleAt) {
             mode = MODE_INTERACTIVE;
             if (random(100) < WINK_IDLE_CHANCE) {
                 player.start(wink_seq, WINK_SEQ_LEN, WINK_DELAY_MS);
-            } else { 
+            } else {
                 uint8_t pick = random(3);
                 if (pick == 0) {
                     player.start(blink_seq, BLINK_SEQ_LEN, BLINK_DELAY_MS);
