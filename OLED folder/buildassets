@@ -8,18 +8,18 @@ OUT_PATH = REPO_ROOT / "tamagotchi_eyes" / "anim_assets.h"
 
 SOURCES = {
     'blink': RAW_DIR / "Blinking" / "animation.h",
-    'look': RAW_DIR / "Looking" / "animation.h",
+    'look': RAW_DIR / "Looking Around" / "animation.h",
     'wink': RAW_DIR / "Winking" / "animation.h",
-    'aff': RAW_DIR / "Affectionate" / "animation.h",
-    'aff1': RAW_DIR / "Affectionate1" / "animation.h",
-    'music': RAW_DIR / "Music" / "animation.h",
+    'aff': RAW_DIR / "Affection" / "animation.h",
+    'aff1': RAW_DIR / "Affection2" / "animation.h",
+    'music': RAW_DIR / "Music Bee" / "animation.h",
     'melody': RAW_DIR / "Melody" / "animation.h",
 }
 
 W, H = 128, 64
 ROW_BYTES = W // 8
 FRAME_BYTES = 1024
-FRAME_DELAY = 125
+FRAME_DELAY_MS = 125
 
 def parse_frames(path):
     if not path.exists():
@@ -86,7 +86,7 @@ def main():
         f.write("// Re-run the script if you add/change source animation folders.\n")
         f.write("#pragma once\n#include <avr/pgmspace.h>\n\n")
         f.write(f"#define ANIM_FRAME_BYTES   {FRAME_BYTES}\n")
-        f.write(f"#define ANIM_FRAME_DELAY {FRAME_DELAY}\n")
+        f.write(f"#define ANIM_FRAME_DELAY_MS {FRAME_DELAY_MS}\n")
         f.write(f"#define ANIM_UNIQUE_COUNT  {len(unique_pool)}\n\n")
  
         for i, rle in enumerate(unique_pool):
