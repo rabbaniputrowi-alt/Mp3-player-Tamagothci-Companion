@@ -69,13 +69,15 @@ struct AnimPlayer {
     const uint8_t *seq = nullptr;
     uint8_t len = 0;
     uint8_t pos = 0;
+    uint16_t delayMs = 125;
     unsigned long lastFrameMs = 0;
     bool active = false;
 
-    void start(const uint8_t *seqPtr, uint8_t seqLen) {
+    void start(const uint8_t *seqPtr, uint8_t seqLen, uint16_t frameDelayMs) {
         seq = seqPtr;
         len = seqLen;
         pos = 0;
+        delayMs = frameDelayMs;
         active = (len > 0);
         if (active) {
             decodeFrameToDisplayBuffer(pgm_read_byte(&seq[0]));
@@ -90,7 +92,7 @@ struct AnimPlayer {
 
     void update() {
         if (!active) return;
-        if (millis() - lastFrameMs >= ANIM_FRAME_DELAY_MS) {
+        if (millis() - lastFrameMs >= delayMs) {
             pos++;
             if (pos >= len) {
                 active = false;
@@ -114,7 +116,7 @@ enum Mode : uint8_t {
 
 Mode mode = MODE_IDLE;
 
-bool chainToEmblem = false;
+bool chainToMelody = false;
 unsigned long nextIdleAt = 0;
 uint8_t affectionCount = 0;
 unsigned long lastAffectionAt = 0;
@@ -133,6 +135,9 @@ void setup() {
     pinMode(WINK, INPUT_PULLUP);
     pinMode(MUSIC, INPUT_PULLUP);
 
+    Wire.begin();
+    Wire.setClock(400000)
+
     if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
         Serial.println(F("SSD1306 allocation failed"));
         for (;;);
@@ -148,9 +153,9 @@ void loop() {
     player.update();
 
     if (mode == MODE_TRANSITION && player.isDone()) {
-        if (chainToEmblem) {
-            chainToEmblem = false;
-            player.start(music_seq, MUSIC_SEQ_LEN);
+        if (chainToMelody) {
+            chainToMelody = false;
+            player.start(melody_seq, MELODY_SEQ_LEN, MELODY_DELAY_MS);
         } else {
             mode = MODE_MUSIC;
         }
@@ -163,8 +168,8 @@ void loop() {
     if (musicPressed) {
         if (mode == MODE_IDLE) {
             mode = MODE_TRANSITION;
-            chainToEmblem = true;
-            player.start(melody_seq, MELODY_SEQ_LEN);
+            chainToMelody = true;
+            player.start(music_seq, MUSIC_SEQ_LEN, MUSIC_DELAY_MS);
         } else if (mode == MODE_MUSIC) {
             goIdle();
         }
@@ -178,10 +183,10 @@ void loop() {
             lastAffectionAt = now;
             mode = MODE_INTERACTIVE;
             if (affectionCount >= AFF2_THRESHOLD) {
-                player.start(aff1_seq, AFF1_SEQ_LEN);
+                player.start(aff1_seq, AFF1_SEQ_LEN, AFF!_DELAY_MS);
                 affectionCount = 0;
             } else {
-                player.start(aff_seq, AFF_SEQ_LEN);
+                player.start(aff_seq, AFF_SEQ_LEN, AFF_DELAY_MS);
             }
         } else if (winkPressed) {
             mode = MODE_INTERACTIVE;
@@ -189,11 +194,16 @@ void loop() {
         } else if (millis() >= nextIdleAt) {
             mode = MODE_INTERACTIVE;
             if (random(100) < WINK_IDLE_CHANCE) {
-                player.start(wink_seq, WINK_SEQ_LEN);
-            } else if (random(2) == 0) {
-                player.start(blink_seq, BLINK_SEQ_LEN);
-            } else {
-                player.start(look_seq, LOOK_SEQ_LEN);
+                player.start(wink_seq, WINK_SEQ_LEN, WINK_DELAY_MS);
+            } else { 
+                uint8_t pick = random(3);
+                if (pick == 0) {
+                    player.start(blink_seq, BLINK_SEQ_LEN, BLINK_DELAY_MS);
+                } else if (pick == 1) {
+                    player.start(look_seq, LOOK_SEQ_LEN, LOOK_DELAY_MS);
+                } else {
+                    player.start(lookr_seq, LOOKR_SEQ_LEN, LOOKR_DELAY_MS);
+                }
             }
         }
     }
