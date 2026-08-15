@@ -16,8 +16,8 @@ couldnt find a good software to create wiring diagrams on with all my components
 # Wiring
 ## DFplayer
 VCC -> 3.3v Rail
-RX -> GPIO 15
-TX -> GPIO 14
+RX -> GPIO 28
+TX -> GPIO 29
 DAC_R -> Ring (PJ_307)
 DAC_L -> Tip (PJ-307)
 GND -> GND Rail
@@ -29,11 +29,11 @@ Tip -> DAC_L
 Sleeve -> GND Rail
 
 ## TFT Round Display
-RST -> GPIO 26
-CS -> GPIO 27
-DC -> GPIO 28
-SDA -> GPIO 29
-SCL -> GPIO 6
+RST -> GPIO 8
+CS -> GPIO 6
+DC -> GPIO 7
+SDA -> GPIO 14
+SCL -> GPIO 15
 GND -> GND Rail
 VCC -> 3v3 Rail
 
