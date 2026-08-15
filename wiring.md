@@ -1,23 +1,23 @@
 This file basically displays the basic wiring shceme for this project
 couldnt find a good software to create wiring diagrams on with all my components so im writting this instead
 
-# PROTOTYPE PARTS
-- Arduino Nano
-- DFPlayer mini
-- OLED 0.96" screen
-- JP-307 stereo 3.5mm jack barrel
-- 2 pin tactile buttons (3x)
-- jumper wires
+# NEW PARTS
+- Waveshare RP2040 Zero
+- TFT Round display
+- MPU 6050
+- 2 pin tactile buttons (4x)
+- DFPlayer
+- JP-307 Stereo Jack Barrel
+- Jumper Wires U
 - Breadboard
-- 10k Resistor
-- 470uF Capacitor
+- 3.7 Lip Battery 1200mAh
+- Charging Module
 
-# WIRING
-
-## DFPlayer
-VCC -> 5V Rail
-RX -> 10k Ohm Resistor -> D2
-TX -> D3
+# Wiring
+## DFplayer
+VCC -> 3.3v Rail
+RX -> GPIO 15
+TX -> GPIO 14
 DAC_R -> Ring (PJ_307)
 DAC_L -> Tip (PJ-307)
 GND -> GND Rail
@@ -28,18 +28,28 @@ Ring -> DAC_R
 Tip -> DAC_L
 Sleeve -> GND Rail
 
-## OLED 0.96" Screen
-SDA -> A4 (Arduino Nano)
-SCL -> A5 (Arduino Nano)
-VCC -> 3.3V Rail
+## TFT Round Display
+RST -> GPIO 26
+CS -> GPIO 27
+DC -> GPIO 28
+SDA -> GPIO 29
+SCL -> GPIO 6
 GND -> GND Rail
+VCC -> 3v3 Rail
+
+## MPU 6050
+SDA -> GPIO 4
+SCL -> GPIO 5
+GND -> GND Rail
+VCC -> 3v3 Rail
 
 ## Tactile Buttons
-GND -> GND Rail
-+ side -> D6, D8, D11 (you can use any pins)
+btn1 -> GPIO 0
+btn2 -> GPIO 1
+btn3 -> GPIO 2
+btn4 -> GPIO 3
 
-## Arduino Nano
-All of the connected list above plus
-GND ->  GND Rail
-5V -> 5V Rail
-3.3V -> 3.3v Rail
+## Waveshare RP2040 Zero
+- All of the GPIO pins cited above
+- 3v3  -> +Rail = 3v3 Rail
+= GND -> -Rail = GND Rail
