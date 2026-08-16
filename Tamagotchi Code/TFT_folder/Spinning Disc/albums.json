@@ -3,5 +3,23 @@
         "title": "Hamilton",
         "artist": "LMM",
         "image": "covers/Hamilton.jpg"
+    },
+
+    {
+        "title": "Sweet Revenge",
+        "artist": "MCR",
+        "image": "covers/Sweet_Revenge.jpg"
+    },
+
+    {
+        "title": "Black Parade",
+        "artist": "MCR",
+        "image": "covers/Black_Parade.jpg"
+    },
+
+    {
+        "title": "Bullets",
+        "artist": "MCR",
+        "image": "covers/Bullets.jpg"
     }
 ]

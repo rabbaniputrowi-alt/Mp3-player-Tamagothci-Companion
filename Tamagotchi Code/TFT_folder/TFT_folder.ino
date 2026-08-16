@@ -1,53 +1,36 @@
 #include "config.h"
-#include "album_store.h"
-#include "disc_renderer.h"
-#include "display.h"
+#include "audio_player.h"
 
 namespace {
-  // Assumes a standard active-low button: one leg to PIN_BTN_PLAY, the
-  // other to GND, using the RP2040's internal pull-up. If your button is
-  // wired the opposite way (active-high), flip the == LOW check below.
-  constexpr uint16_t LONG_PRESS_MS = 600;
-
-  bool     btnDown        = false;
-  bool     longPressFired = false;
-  uint32_t btnDownAt      = 0;
-
-  void handlePlayButton(uint32_t now) {
-    bool pressed = (digitalRead(PIN_BTN_PLAY) == LOW);
-
-    if (pressed && !btnDown) {
-      btnDown        = true;
-      longPressFired = false;
-      btnDownAt      = now;
-    } else if (pressed && btnDown && !longPressFired) {
-      if (now - btnDownAt >= LONG_PRESS_MS) {
-        longPressFired = true;
-        DiscRenderer::replay();
-      }
-    } else if (!pressed && btnDown) {
-      if (!longPressFired) {
-        // Short press released before the long-press threshold: toggle
-        // play/pause instead.
-        DiscRenderer::setSpinning(!DiscRenderer::isSpinning());
-      }
-      btnDown = false;
-    }
-  }
+  // Simple debounce: react on release, not on press, to avoid double-fires.
+  bool prevWasDown = false;
+  bool playWasDown = false;
+  bool nextWasDown = false;
 }
 
 void setup() {
+  pinMode(PIN_BTN_PREV, INPUT_PULLUP);
   pinMode(PIN_BTN_PLAY, INPUT_PULLUP);
+  pinMode(PIN_BTN_NEXT, INPUT_PULLUP);
 
-  AlbumStore::init();
-  Display::init();
-  DiscRenderer::init();
-  DiscRenderer::setSpinning(true);
+  AudioPlayer::init();
+
+  // Starts on ALBUMS[0] / SD card folder 01, track 1. Swap this out
+  // once there's a menu/selection flow for choosing which album to
+  // start on.
+  AudioPlayer::playPlaylist(0, 1);
 }
 
 void loop() {
-  uint32_t now = millis();
-  handlePlayButton(now);
-  DiscRenderer::tick(now);
-  Display::drawDisc();
+  bool prevDown = (digitalRead(PIN_BTN_PREV) == LOW);
+  bool playDown = (digitalRead(PIN_BTN_PLAY) == LOW);
+  bool nextDown = (digitalRead(PIN_BTN_NEXT) == LOW);
+
+  if (prevWasDown && !prevDown) AudioPlayer::previous();
+  if (playWasDown && !playDown) AudioPlayer::togglePlayPause();
+  if (nextWasDown && !nextDown) AudioPlayer::next();
+
+  prevWasDown = prevDown;
+  playWasDown = playDown;
+  nextWasDown = nextDown;
 }

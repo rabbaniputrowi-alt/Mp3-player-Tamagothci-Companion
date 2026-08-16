@@ -9,7 +9,7 @@ namespace DiscRenderer {
 namespace {
   constexpr float TWO_PI_F = 6.28318530718f;
 
-=
+ 
   constexpr float SPIN_DEG_S      = 25.0f;
   constexpr float SPIN_RAD_S      = SPIN_DEG_S * (TWO_PI_F / 360.0f);
   constexpr float EASE_MS         = 600.0f;      // spin-up / spin-down time
