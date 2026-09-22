@@ -1,22 +1,40 @@
-#pragma once
-#include <stdint.h>
+#include "playlist_art.h"
 
-// Bridges AudioPlayer's (playlist, track) position to which entry in
-// ALBUMS[] should be shown as cover art. Some playlists show one
-// consistent cover throughout (Hamilton); others cycle through several
-// covers as the tracks change (a compilation like the MCR playlist,
-// cycling through 3 covers).
-//
-// ALBUMS[] itself just holds unique art assets now — it's no longer
-// assumed to be one entry per playlist. albums.json should list each
-// unique cover once (Hamilton's cover, then MCR's 3 covers = 4 total
-// entries), and this table says which index applies to which playlist/
-// track combination.
 namespace PlaylistArt {
 
-  // Given a 0-based playlist index (matches AudioPlayer::currentPlaylist())
-  // and a 1-based track number (matches AudioPlayer::currentTrack()),
-  // returns the ALBUMS[] index to load as cover art.
-  uint8_t artIndexFor(uint8_t playlist, uint8_t track);
+namespace {
+  struct PlaylistArtConfig {
+    const uint8_t *artIndices;  // ALBUMS[] indices this playlist cycles through
+    uint8_t        count;       // length of that array
+  };
 
+  // One array per playlist. A single-entry array means "one cover for the
+  // whole folder"; add more indices to cycle art across tracks.
+  constexpr uint8_t HAMILTON_ART[] = { 0 };
+  constexpr uint8_t MCR_ART[]      = { 1 };
+  constexpr uint8_t BUNII_ART[]    = { 2 };
+
+  // Index in this table == AudioPlayer playlist index == SD folder - 1.
+  constexpr PlaylistArtConfig PLAYLIST_ART[] = {
+    { HAMILTON_ART, 1 },   // playlist 0 -> folder 01
+    { MCR_ART,      1 },   // playlist 1 -> folder 02
+    { BUNII_ART,    1 }    // playlist 2 -> folder 03
+  };
+  constexpr uint8_t PLAYLIST_COUNT = sizeof(PLAYLIST_ART) / sizeof(PLAYLIST_ART[0]);
 }
+
+uint8_t artIndexFor(uint8_t playlist, uint8_t track) {
+  if (playlist >= PLAYLIST_COUNT) return 0;  // unconfigured playlist, fall back to art 0
+  if (track < 1) track = 1;                  // track is 1-based; guard the subtraction
+
+  const PlaylistArtConfig &cfg = PLAYLIST_ART[playlist];
+  // track is 1-based; (track-1) % count cycles 0,1,2,...,count-1,0,1,2,...
+  uint8_t i = (uint8_t)((track - 1) % cfg.count);
+  return cfg.artIndices[i];
+}
+
+uint8_t playlistCount() {
+  return PLAYLIST_COUNT;
+}
+
+} // namespace PlaylistArt

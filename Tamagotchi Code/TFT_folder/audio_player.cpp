@@ -15,18 +15,25 @@ namespace {
 }
  
 void init() {
-  // GP28/29 support UART1 on the RP2040's GPIO function mux (every 8th
-  // pin repeats the TX/RX/CTS/RTS pattern) — this remaps Serial2 there
-  // instead of its default pins. Must be called before begin().
-  Serial2.setTX(DFPLAYER_TX_PIN);
-  Serial2.setRX(DFPLAYER_RX_PIN);
-  Serial2.begin(9600);
+  // GP28/29 are UART0 pins on the RP2040's GPIO mux (UART0 TX: 0/12/16/28,
+  // RX: 1/13/17/29), so the DFPlayer goes on Serial1. Serial2 is UART1 and
+  // cannot reach these pins - the core panic()s on an illegal pin, halting
+  // the chip before USB enumerates. Must be called before begin().
+  Serial1.setTX(DFPLAYER_TX_PIN);
+  Serial1.setRX(DFPLAYER_RX_PIN);
+  Serial1.begin(9600);
  
-  // Some DFPlayer clones never send the ACK this expects during the
-  // handshake — begin() can report failure on those boards even though
-  // playback commands work fine afterward. Log it, but don't gate
-  // anything on the result.
-  bool ok = dfplayer.begin(Serial2, /*isACK=*/true, /*doReset=*/true);
+  // isACK MUST stay false on this clone. With ACK enabled the library's
+  // sendStack() spins in `while (_isSending) waitAvailable();` before every
+  // command, and _isSending is only cleared by a 0x41 ACK byte the clone
+  // never sends — so it clears via the 500ms timeout instead. That means
+  // every play/pause/next call blocked the render loop for half a second
+  // and the album art visibly froze on each button press. With ACK off the
+  // library just waits 10ms after each command.
+  //
+  // begin() also reports failure on these boards for the same missing-ACK
+  // reason. Log it, but don't gate anything on the result.
+  bool ok = dfplayer.begin(Serial1, /*isACK=*/false, /*doReset=*/true);
   if (!ok) {
     // No Serial console assumed connected in normal operation, but if
     // you're debugging with one attached, this is where you'd see it:
