@@ -3,6 +3,11 @@
 
 // Tier 2 -> Tier 3: reads AlbumStore::pixels (RAM working copy),
 // writes rotated RGB565 output into a caller-supplied band buffer.
+//
+// The album cover fills the round panel edge to edge and simply spins.
+// No vinyl plate, grooves or outer ring — those were tried and removed.
+// build_albums.py masks each cover to a circle of radius DISC_R, so the
+// art's own edge is the visible edge of the display.
 namespace DiscRenderer {
 
   // Call once at boot. Builds the chord table (per-row half-widths

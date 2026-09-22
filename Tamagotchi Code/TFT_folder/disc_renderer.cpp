@@ -9,7 +9,6 @@ namespace DiscRenderer {
 namespace {
   constexpr float TWO_PI_F = 6.28318530718f;
 
- 
   constexpr float SPIN_DEG_S      = 25.0f;
   constexpr float SPIN_RAD_S      = SPIN_DEG_S * (TWO_PI_F / 360.0f);
   constexpr float EASE_MS         = 600.0f;      // spin-up / spin-down time
@@ -17,41 +16,30 @@ namespace {
 
   constexpr float REPLAY_DURATION_MS = 350.0f;
 
-  // --- Vinyl look ---
-  constexpr float ALBUM_SCALE     = 0.6f;
-  constexpr int   GROOVE_COUNT    = 40;    // fine ring bands
+  // Album art fills the whole disc, edge to edge — no vinyl plate, no
+  // grooves, no outer ring. build_albums.py already center-crops each
+  // cover to a square and masks it to a circle of radius DISC_R, so the
+  // art's own edge *is* the disc's edge.
+  //
+  // The slight overscan (>1.0) shrinks the sampled source radius a couple
+  // of pixels inside that mask. Without it, the outermost ring of screen
+  // pixels can sample a source pixel sitting just outside the mask and
+  // come back black, leaving a speckled rim.
+  constexpr float ALBUM_SCALE = 1.03f;
 
-  constexpr uint16_t VINYL_BLACK     = 0x0000;
-  constexpr uint16_t VINYL_GROOVE    = 0x18C3; 
-  constexpr uint16_t VINYL_HIGHLIGHT = 0x5ACB; 
+  float    angle         = 0.0f;
+  float    angularVel    = 0.0f;
+  bool     spinning      = false;
+  uint32_t lastTickMs    = 0;
 
-  float    angle        = 0.0f;   
-  float    angularVel    = 0.0f;   
-  bool     spinning      = false;  
-  uint32_t lastTickMs     = 0;
-
-  bool     replaying         = false; 
-  bool     replayPending     = false; 
+  bool     replaying         = false;
+  bool     replayPending     = false;
                                        // used to capture the eased tween's start point
-  bool     resumeSpinAfter   = false; 
+  bool     resumeSpinAfter   = false;
   float    replayStartAngle  = 0.0f;
   uint32_t replayStartMs     = 0;
 
-
   uint8_t halfChord[SCREEN_H];
-
-  int32_t albumRadiusSq;
-
-
-  int32_t grooveThresholdSq[GROOVE_COUNT];
-
-  uint16_t vinylColorForRadiusSq(int32_t rSq) {
-    int band = 0;
-    while (band < GROOVE_COUNT && rSq > grooveThresholdSq[band]) band++;
-    if (band >= GROOVE_COUNT - 1) return VINYL_HIGHLIGHT; // outermost ring(s)
-    return (band & 1) ? VINYL_GROOVE : VINYL_BLACK;
-  }
-
 
   float easeOutBack(float x) {
     constexpr float c1 = 1.70158f;
@@ -66,14 +54,6 @@ void init() {
     int dy = y - DISC_CY;
     int v  = DISC_R * DISC_R - dy * dy;
     halfChord[y] = (v <= 0) ? 0 : (uint8_t)sqrtf((float)v);
-  }
-
-  const float albumRadius = DISC_R * ALBUM_SCALE;
-  albumRadiusSq = (int32_t)(albumRadius * albumRadius);
-
-  for (int i = 0; i < GROOVE_COUNT; i++) {
-    float r = albumRadius + (DISC_R - albumRadius) * (float)(i + 1) / (float)GROOVE_COUNT;
-    grooveThresholdSq[i] = (int32_t)(r * r);
   }
 
   angle      = 0.0f;
@@ -160,7 +140,6 @@ void tick(uint32_t nowMs) {
 void renderBand(uint16_t *out, uint8_t bandIndex) {
   const int y0 = bandIndex * BAND_H;
 
-
   const float invScale = 1.0f / ALBUM_SCALE;
   const int32_t ca = (int32_t)(cosf(angle) * 65536.0f * invScale);
   const int32_t sa = (int32_t)(sinf(angle) * 65536.0f * invScale);
@@ -172,6 +151,7 @@ void renderBand(uint16_t *out, uint8_t bandIndex) {
     uint16_t *row = out + (y - y0) * SCREEN_W;
     const int half = halfChord[y];
 
+    // Rows above/below the circle are entirely off-disc.
     if (!half) {
       memset(row, 0, SCREEN_W * sizeof(uint16_t));
       continue;
@@ -180,27 +160,22 @@ void renderBand(uint16_t *out, uint8_t bandIndex) {
     const int xs = DISC_CX - half;
     const int xe = DISC_CX + half;
 
+    // Black out the corners of the panel that fall outside the circle.
     if (xs > 0)            memset(row, 0, xs * sizeof(uint16_t));
     if (xe < SCREEN_W - 1) memset(row + xe + 1, 0, (SCREEN_W - 1 - xe) * sizeof(uint16_t));
 
-    const int dy   = y - DISC_CY;
-    const int dyDy = dy * dy;
+    const int dy      = y - DISC_CY;
     const int dxStart = xs - DISC_CX;
 
     int32_t sx = ((int32_t)DISC_CX << 16) + dxStart * ca - dy * sa;
     int32_t sy = ((int32_t)DISC_CY << 16) + dxStart * sa + dy * ca;
 
+    // Every pixel between xs and xe is inside the circle, so it is album
+    // art — no per-pixel radius test needed any more.
     for (int x = xs; x <= xe; x++) {
-      const int dx = x - DISC_CX;
-      const int32_t rSq = dx * dx + dyDy;
-
-      if (rSq <= albumRadiusSq) {
-        const int srcX = sx >> 16;
-        const int srcY = sy >> 16;
-        row[x] = srcPal[srcPixels[srcY * ART_W + srcX]];
-      } else {
-        row[x] = vinylColorForRadiusSq(rSq);
-      }
+      const int srcX = sx >> 16;
+      const int srcY = sy >> 16;
+      row[x] = srcPal[srcPixels[srcY * ART_W + srcX]];
 
       sx += ca;
       sy += sa;
