@@ -3,17 +3,23 @@
 #include <DFRobotDFPlayerMini.h>
 
 namespace AudioPlayer {
- 
+
 namespace {
   DFRobotDFPlayerMini dfplayer;
- 
+
   constexpr uint8_t DEFAULT_VOLUME = 20;   // 0-30 range for this module
- 
+
+  // module fallback
+  constexpr uint8_t FALLBACK_TRACK_COUNT = 8;
+
   uint8_t curPlaylist = 0;  // 0-based, ALBUMS[] index
   uint8_t curTrack     = 1;  // 1-based, SD card file number within the folder
   bool    playing      = false;
+
+  uint8_t trackCountCache[UI_MAX_PLAYLISTS] = { 0 };
+  bool    trackCountKnown[UI_MAX_PLAYLISTS] = { false };
 }
- 
+
 void init() {
   // GP28/29 are UART0 pins on the RP2040's GPIO mux (UART0 TX: 0/12/16/28,
   // RX: 1/13/17/29), so the DFPlayer goes on Serial1. Serial2 is UART1 and
@@ -22,7 +28,7 @@ void init() {
   Serial1.setTX(DFPLAYER_TX_PIN);
   Serial1.setRX(DFPLAYER_RX_PIN);
   Serial1.begin(9600);
- 
+
   // isACK MUST stay false on this clone. With ACK enabled the library's
   // sendStack() spins in `while (_isSending) waitAvailable();` before every
   // command, and _isSending is only cleared by a 0x41 ACK byte the clone
@@ -39,42 +45,42 @@ void init() {
     // you're debugging with one attached, this is where you'd see it:
     // Serial.println("DFPlayer handshake failed — likely a clone chip, continuing anyway.");
   }
- 
+
   dfplayer.volume(DEFAULT_VOLUME);
- 
+
   curPlaylist = 0;
   curTrack    = 1;
   playing     = false;
+
+  for (uint8_t i = 0; i < UI_MAX_PLAYLISTS; i++) {
+    trackCountCache[i] = 0;
+    trackCountKnown[i] = false;
+  }
 }
- 
+
 void playPlaylist(uint8_t playlist, uint8_t track) {
   curPlaylist = playlist;
   curTrack    = track;
- 
+
   // ALBUMS[] is 0-based, SD card folders are 1-based (01, 02, ...).
   uint8_t folder = playlist + 1;
   dfplayer.playFolder(folder, curTrack);
   playing = true;
 }
- 
+
 void next() {
-  // NOTE: this doesn't yet know how many tracks are in the current
-  // playlist, so it can walk past the end into a track that doesn't
-  // exist — DFPlayer clones generally just do nothing audible in that
-  // case rather than erroring loudly. Worth adding a per-playlist track
-  // count once the SD card is fully populated, to wrap back to track 1
-  // properly instead of silently stalling.
+
   curTrack++;
   dfplayer.playFolder(curPlaylist + 1, curTrack);
   playing = true;
 }
- 
+
 void previous() {
   if (curTrack > 1) curTrack--;
   dfplayer.playFolder(curPlaylist + 1, curTrack);
   playing = true;
 }
- 
+
 void togglePlayPause() {
   if (playing) {
     dfplayer.pause();
@@ -84,17 +90,35 @@ void togglePlayPause() {
     playing = true;
   }
 }
- 
+
 bool isPlaying() {
   return playing;
 }
- 
+
 uint8_t currentPlaylist() {
   return curPlaylist;
 }
- 
+
 uint8_t currentTrack() {
   return curTrack;
 }
- 
+
+uint8_t trackCount(uint8_t playlist) {
+  if (playlist >= UI_MAX_PLAYLISTS) return FALLBACK_TRACK_COUNT;
+  if (trackCountKnown[playlist])    return trackCountCache[playlist];
+
+  // readFileCountsInFolder() returns -1 when the module doesn't answer.
+  const int n = dfplayer.readFileCountsInFolder(playlist + 1);
+
+  uint8_t result;
+  if (n == 0)       result = 0;                     // module says empty
+  else if (n < 0)   result = FALLBACK_TRACK_COUNT;  // no answer
+  else if (n > 255) result = 255;
+  else              result = (uint8_t)n;
+
+  trackCountCache[playlist] = result;
+  trackCountKnown[playlist] = true;
+  return result;
+}
+
 } // namespace AudioPlayer

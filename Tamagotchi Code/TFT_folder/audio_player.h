@@ -34,4 +34,6 @@ namespace AudioPlayer {
   uint8_t currentPlaylist(); // 0-based, matches ALBUMS[] index
   uint8_t currentTrack();    // 1-based, matches SD card file numbering
 
+  uint8_t trackCount(uint8_t playlist);
+
 }
