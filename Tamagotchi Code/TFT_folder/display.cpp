@@ -25,6 +25,11 @@ void init() {
   tft.fillScreen(TFT_BLACK);
 }
 
+TFT_eSPI &panel() {
+  return tft;
+}
+
+
 void drawDisc() {
   uint16_t *buf = bandA;
 
