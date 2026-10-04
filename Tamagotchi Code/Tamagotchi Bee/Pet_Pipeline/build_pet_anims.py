@@ -13,9 +13,10 @@ How it works
 ------------
 1. Every clip is decoded with ffmpeg (bundled via the imageio-ffmpeg pip
    package, or a system ffmpeg on PATH) and downscaled to 240x240.
-2. One shared palette of up to 8 colours is built across ALL clips, so every
+2. One shared palette of up to 8 colours is used across ALL clips, so every
    pixel becomes a 3-bit index. Anti-aliased edges keep a couple of in-between
-   shades instead of turning jagged.
+   shades instead of turning jagged. The manifest's "palette" list sets the
+   colours by hand; without it the palette is picked automatically.
 3. Frames are de-duplicated across ALL clips. A frame that differs from an
    already-stored frame by <= --dup-px pixels is not stored again, it just
    points at the existing one. The neutral face is shared by every clip, and a
@@ -33,6 +34,20 @@ How it works
    into the neighbouring runs instead of wasting bytes on hidden art.
 5. Each clip becomes a timeline of (frame, hold) steps at the source frame
    rate, so a pose held for 20 video frames is one step, not 20.
+
+Manifest (pet_anims.json)
+-------------------------
+    "defaults": framing applied to every clip (scale, offset_x, offset_y)
+    "palette":  optional list of up to 8 "#RRGGBB" colours
+    "anims":    one entry per animation:
+        id, file, kind ("idle" / "interactive")
+        scale / offset_x / offset_y   framing override for this clip
+        from / to                     only use this inclusive source-frame
+                                      range, so one mp4 can feed several
+                                      animations (Dizzy.mp4 -> shake + dizzy)
+        segments: [{from, to, scale, offset_x, offset_y}]
+                                      different framing for part of the clip
+                                      (source-frame numbers, inclusive)
 
 Requirements:  pip install numpy imageio-ffmpeg
 """
@@ -209,6 +224,20 @@ def fill_corners(idx, chords):
     return idx
 
 
+def parse_palette(colours):
+    """["#RRGGBB", ...] from the manifest -> int array, sorted dark to light."""
+    pal = []
+    for c in colours:
+        c = c.lstrip("#")
+        if len(c) != 6:
+            sys.exit(f"bad palette colour '{c}', expected #RRGGBB")
+        pal.append([int(c[i:i + 2], 16) for i in (0, 2, 4)])
+    if not 2 <= len(pal) <= MAX_COLORS:
+        sys.exit(f"palette needs 2..{MAX_COLORS} colours, got {len(pal)}")
+    pal = np.array(pal, np.int32)
+    return pal[np.argsort(pal.sum(axis=1), kind="stable")]
+
+
 def rgb565(c):
     r, g, b = (int(v) for v in c)
     return ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
@@ -371,13 +400,37 @@ def main():
     ffmpeg = find_ffmpeg()
 
     # 1. decode
+    cache = {}
+
+    def load(e):
+        """Decode one clip at one framing, once."""
+        key = (e["file"], e.get("scale", 1.0), e.get("offset_x", 0), e.get("offset_y", 0))
+        if key not in cache:
+            cache[key] = decode_clip(ffmpeg, os.path.join(base, key[0]), *key[1:])
+        return cache[key]
+
     clips, all_frames, fps_seen = [], [], []
     for entry in manifest["anims"]:
         e = {**defaults, **entry}
-        path = os.path.join(base, e["file"])
-        frames, fps = decode_clip(ffmpeg, path, e.get("scale", 1.0),
-                                  e.get("offset_x", 0), e.get("offset_y", 0))
-        print(f"  {e['id']:<18} {len(frames):4d} frames @ {fps:g} fps  <- {e['file']}")
+        frames, fps = load(e)
+        n_src = len(frames)
+        # Per-range framing overrides, in source-frame numbers (inclusive).
+        segments = e.get("segments", [])
+        if segments:
+            frames = frames.copy()
+            for seg in segments:
+                alt, _ = load({**e, **seg})
+                a, b = seg["from"], seg["to"]
+                if not 0 <= a <= b < n_src:
+                    sys.exit(f"{e['id']}: segment {a}..{b} is outside 0..{n_src - 1}")
+                frames[a:b + 1] = alt[a:b + 1]
+        # Optional sub-range, so one mp4 can feed several animations.
+        lo, hi = e.get("from", 0), e.get("to", n_src - 1)
+        if not 0 <= lo <= hi < n_src:
+            sys.exit(f"{e['id']}: from/to {lo}..{hi} is outside 0..{n_src - 1}")
+        frames = frames[lo:hi + 1]
+        span = f" [{lo}..{hi}]" if (lo, hi) != (0, n_src - 1) else ""
+        print(f"  {e['id']:<18} {len(frames):4d} frames @ {fps:g} fps  <- {e['file']}{span}")
         clips.append(e)
         all_frames.append(frames)
         fps_seen.append(fps)
@@ -387,7 +440,10 @@ def main():
     tick_ms = int(round(1000.0 / fps))
 
     # 2. palette
-    pal = build_palette(all_frames, args.colors)
+    if "palette" in manifest:
+        pal = parse_palette(manifest["palette"])
+    else:
+        pal = build_palette(all_frames, args.colors)
     palette565 = [rgb565(c) for c in pal]
     print("  palette:", " ".join(f"#{r:02X}{g:02X}{b:02X}" for r, g, b in pal))
 

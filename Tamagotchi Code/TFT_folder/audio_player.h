@@ -34,6 +34,9 @@ namespace AudioPlayer {
   uint8_t currentPlaylist(); // 0-based, matches ALBUMS[] index
   uint8_t currentTrack();    // 1-based, matches SD card file numbering
 
+  // Songs in `playlist`. Uses the count from tracks.json (TrackNames) when
+  // the folder is listed there, otherwise asks the DFPlayer, and falls back
+  // to a fixed guess if the module doesn't answer. Cached per playlist.
   uint8_t trackCount(uint8_t playlist);
 
 }

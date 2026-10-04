@@ -1,4 +1,4 @@
-//  idle/interactive animation state machine.
+//  idle/interactive/shake animation state machine.
 #include "pet.h"
 
 namespace {
@@ -7,7 +7,10 @@ namespace {
 const uint32_t REST_MIN_MS = 2500;            // neutral-face pause between idles
 const uint32_t REST_MAX_MS = 6000;
 const uint32_t REST_AFTER_INTERACTIVE_MS = 1500;
-const uint8_t  LOOKAROUND_CHANCE_PCT = 30;    // otherwise BLINK
+const uint8_t  LOOKAROUND_CHANCE_PCT = 30;
+const uint8_t  BUBBLE_CHANCE_PCT = 8;         // the rare one; the rest is BLINK
+const uint8_t  BUBBLE_MIN_GAP = 5;            // idles between two bubble faces
+const uint32_t SHAKE_MIN_MS = 900;            // a short jolt still gets a proper shake
 // 
 
 PetAnimId s_anim = PET_ANIM_COUNT;            // PET_ANIM_COUNT == resting
@@ -17,6 +20,9 @@ uint32_t  s_restUntil = 0;
 uint16_t  s_frame = 0;
 uint16_t  s_restFrame = 0;
 PetAnimId s_lastIdle = PET_ANIM_COUNT;
+uint8_t   s_sinceBubble = 0;                  // idles played since the last bubble face
+bool      s_shaking = false;
+uint32_t  s_shakeMinUntil = 0;
 uint32_t  s_rng = 0x9E3779B9u;
 
 uint32_t rnd() {                              // xorshift32
@@ -45,12 +51,30 @@ void start(PetAnimId id, uint32_t now) {
 }
 
 PetAnimId pickIdle() {
-  PetAnimId id = (rnd() % 100 < LOOKAROUND_CHANCE_PCT) ? PET_ANIM_LOOKAROUND
-                                                       : PET_ANIM_BLINK;
-  if (id == PET_ANIM_LOOKAROUND && s_lastIdle == PET_ANIM_LOOKAROUND)
-    id = PET_ANIM_BLINK;                      // never look around twice running
+  const uint32_t r = rnd() % 100;
+  PetAnimId id = PET_ANIM_BLINK;
+  if (r < BUBBLE_CHANCE_PCT) {
+    if (s_sinceBubble >= BUBBLE_MIN_GAP) id = PET_ANIM_BUBBLE_FACE;
+  } else if (r < (uint32_t)BUBBLE_CHANCE_PCT + LOOKAROUND_CHANCE_PCT) {
+    if (s_lastIdle != PET_ANIM_LOOKAROUND) id = PET_ANIM_LOOKAROUND;  // never twice running
+  }
+  if (id == PET_ANIM_BUBBLE_FACE) s_sinceBubble = 0;
+  else if (s_sinceBubble < 255) s_sinceBubble++;
   s_lastIdle = id;
   return id;
+}
+
+bool inShake() { return s_anim == PET_ANIM_SHAKE_START || s_anim == PET_ANIM_SHAKE_LOOP; }
+
+// What follows `finished`, starting at time `t`. Returns false if nothing
+// does and the pet should rest.
+bool chain(PetAnimId finished, uint32_t t) {
+  if (finished == PET_ANIM_SHAKE_START || finished == PET_ANIM_SHAKE_LOOP) {
+    const bool keepGoing = s_shaking || !reached(t, s_shakeMinUntil);
+    start(keepGoing ? PET_ANIM_SHAKE_LOOP : PET_ANIM_DIZZY, t);
+    return true;
+  }
+  return false;
 }
 
 } 
@@ -61,6 +85,9 @@ void begin(uint32_t nowMs, uint32_t seed) {
   s_rng = seed ? seed : 0x9E3779B9u;
   // The neutral face is the first frame of BLINK.
   s_restFrame = PET_ANIMS[PET_ANIM_BLINK].steps[0].frame;
+  s_lastIdle = PET_ANIM_COUNT;
+  s_sinceBubble = 0;
+  s_shaking = false;
   rest(nowMs, rndRange(REST_MIN_MS / 2, REST_MAX_MS / 2));
 }
 
@@ -72,10 +99,17 @@ bool update(uint32_t now) {
     return s_frame != before;
   }
 
+  // The shaking stopped: cut the loop short and go dizzy.
+  if (s_anim == PET_ANIM_SHAKE_LOOP && !s_shaking && reached(now, s_shakeMinUntil)) {
+    start(PET_ANIM_DIZZY, now);
+    return s_frame != before;
+  }
+
   // Advance; if we fell behind (slow draw), skip frames to stay in time.
-  const PetAnim& a = PET_ANIMS[s_anim];
   while (reached(now, s_stepEnd)) {
+    const PetAnim& a = PET_ANIMS[s_anim];
     if (++s_step >= a.stepCount) {
+      if (chain(s_anim, s_stepEnd)) continue;
       bool wasInteractive = a.kind == PET_KIND_INTERACTIVE;
       rest(now, wasInteractive ? REST_AFTER_INTERACTIVE_MS
                                : rndRange(REST_MIN_MS, REST_MAX_MS));
@@ -97,6 +131,19 @@ bool trigger(PetAnimId id, uint32_t now) {
     return false;
   start(id, now);
   return true;
+}
+
+void setShaking(bool shaking, uint32_t now) {
+  const bool began = shaking && !s_shaking;
+  s_shaking = shaking;
+  if (!began || inShake()) return;
+  // Shaken while still dizzy: straight back into the loop, no wind-up.
+  start(s_anim == PET_ANIM_DIZZY ? PET_ANIM_SHAKE_LOOP : PET_ANIM_SHAKE_START, now);
+  s_shakeMinUntil = now + SHAKE_MIN_MS;
+}
+
+bool tiltAllowed() {
+  return s_anim == PET_ANIM_COUNT || s_anim == PET_ANIM_BLINK || s_anim == PET_ANIM_WINK;
 }
 
 } 

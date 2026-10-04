@@ -4,8 +4,8 @@
 
 #define PET_W 240
 #define PET_H 240
-#define PET_PALETTE_SIZE 6
-#define PET_FRAME_COUNT 267
+#define PET_PALETTE_SIZE 8
+#define PET_FRAME_COUNT 525
 #define PET_TICK_MS 33   // one source video frame
 
 // One timeline step: show frames[frame] for `hold` ticks.
@@ -27,9 +27,13 @@ struct PetAnim {
 enum PetAnimId : uint8_t {
   PET_ANIM_BLINK,
   PET_ANIM_LOOKAROUND,
+  PET_ANIM_BUBBLE_FACE,
   PET_ANIM_WINK,
   PET_ANIM_MUSIC_SPIN,
   PET_ANIM_WINK_TRANSITION,
+  PET_ANIM_SHAKE_START,
+  PET_ANIM_SHAKE_LOOP,
+  PET_ANIM_DIZZY,
   PET_ANIM_COUNT
 };
 

@@ -15,5 +15,29 @@
         "title": "bunii",
         "artist": "bunii",
         "image": "covers/bunii.jpg"
+    },
+
+    {
+        "title": "Semetary",
+        "artist": "semetary",
+        "image": "covers/semetary.jpg"
+    },
+
+    {
+        "title": "AlYankovic",
+        "artist": "AlYankovic",
+        "image": "covers/AlYankovic.jpg"
+    },
+
+    {
+        "title": "AlexG",
+        "artist": "AlexG",
+        "image": "covers/AlexG.jpg"
+    },
+
+    {
+        "title": "DivineDestiny",
+        "artist": "DivineDestiny",
+        "image": "covers/DivineDestiny.jpg"
     }
 ]
