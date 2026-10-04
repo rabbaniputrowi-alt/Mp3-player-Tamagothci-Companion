@@ -1,5 +1,6 @@
 #include "audio_player.h"
 #include "config.h"
+#include "track_names.h"
 #include <DFRobotDFPlayerMini.h>
 
 namespace AudioPlayer {
@@ -69,8 +70,12 @@ void playPlaylist(uint8_t playlist, uint8_t track) {
 }
 
 void next() {
-
-  curTrack++;
+  // Wrap to track 1 after the last song, but only when tracks.json says how
+  // many songs the folder has. The DFPlayer count can be the fallback guess
+  // on this clone, and wrapping on a wrong guess would cut the folder short.
+  const uint8_t listed = TrackNames::trackCount(curPlaylist);
+  if (listed && curTrack >= listed) curTrack = 1;
+  else if (curTrack < 255)          curTrack++;
   dfplayer.playFolder(curPlaylist + 1, curTrack);
   playing = true;
 }
@@ -106,6 +111,15 @@ uint8_t currentTrack() {
 uint8_t trackCount(uint8_t playlist) {
   if (playlist >= UI_MAX_PLAYLISTS) return FALLBACK_TRACK_COUNT;
   if (trackCountKnown[playlist])    return trackCountCache[playlist];
+
+  // tracks.json is authoritative when it lists this folder - no need to ask
+  // the module (which this clone may not answer anyway).
+  const uint8_t listed = TrackNames::trackCount(playlist);
+  if (listed) {
+    trackCountCache[playlist] = listed;
+    trackCountKnown[playlist] = true;
+    return listed;
+  }
 
   // readFileCountsInFolder() returns -1 when the module doesn't answer.
   const int n = dfplayer.readFileCountsInFolder(playlist + 1);

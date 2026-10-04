@@ -4,6 +4,7 @@
 #include "audio_player.h"
 #include "playlist_art.h"
 #include "backdrop.h"
+#include "track_names.h"
 
 #include <TFT_eSPI.h>
 #include <math.h>
@@ -14,13 +15,9 @@ namespace PlaylistUI {
 
 namespace {
 
-  const char *const PLAYLIST_NAMES[] = {
-    "Hamilton",
-    "Sweet Revenge",
-    "bunii"
-  };
-  constexpr uint8_t PLAYLIST_NAME_COUNT =
-      sizeof(PLAYLIST_NAMES) / sizeof(PLAYLIST_NAMES[0]);
+  // Playlist names and song titles come from tracks.json via the generated
+  // track_names.cpp (build_tracks.py). Anything missing falls back to
+  // "Folder NN" / "Track N".
 
   const GFXfont *const FONT_BIG   = &FreeSerifBoldItalic18pt7b;
   const GFXfont *const FONT_SMALL = &FreeSerifBoldItalic12pt7b;
@@ -87,11 +84,13 @@ namespace {
 
   void labelFor(uint8_t index, char *out, size_t n) {
     if (trackMode) {
-      snprintf(out, n, "Track %u", (unsigned)(index + 1));
-    } else if (index < PLAYLIST_NAME_COUNT) {
-      snprintf(out, n, "%s", PLAYLIST_NAMES[index]);
+      const char *t = TrackNames::title(listOwner, (uint8_t)(index + 1));
+      if (t) snprintf(out, n, "%s", t);
+      else   snprintf(out, n, "Track %u", (unsigned)(index + 1));
     } else {
-      snprintf(out, n, "Folder %02u", (unsigned)(index + 1));
+      const char *name = TrackNames::playlistName(index);
+      if (name) snprintf(out, n, "%s", name);
+      else      snprintf(out, n, "Folder %02u", (unsigned)(index + 1));
     }
   }
 
@@ -204,9 +203,7 @@ void init() {
 void openPlaylists(uint8_t playlist) {
   trackMode = false;
 
-  uint8_t n = PlaylistArt::playlistCount();
-  if (n > PLAYLIST_NAME_COUNT) n = PLAYLIST_NAME_COUNT;
-  count = n;
+  count = PlaylistArt::playlistCount();
 
   selected  = (count && playlist < count) ? playlist : 0;
   listOwner = selected;

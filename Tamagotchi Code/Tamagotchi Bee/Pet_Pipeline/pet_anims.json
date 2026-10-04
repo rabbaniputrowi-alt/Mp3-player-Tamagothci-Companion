@@ -1,13 +1,18 @@
 {
   "defaults": { "scale": 1.08, "offset_x": 0, "offset_y": 10 },
+  "palette": ["#000000", "#444444", "#7F7F7F", "#B07E65", "#BABABA", "#61DAFC", "#ABEBFC", "#FFFFFF"],
   "anims": [
     { "id": "BLINK",           "file": "clips/Blink.mp4",           "kind": "idle" },
-    { "id": "LOOKAROUND",      "file": "clips/Lookaround.mp4",      "kind": "idle" },
+    { "id": "LOOKAROUND",      "file": "clips/Looking Around.mp4",  "kind": "idle" },
+    { "id": "BUBBLE_FACE",     "file": "clips/BubbleFace.mp4",      "kind": "idle" },
     { "id": "WINK",            "file": "clips/Wink.mp4",            "kind": "interactive" },
     { "id": "MUSIC_SPIN",      "file": "clips/Music Spin.mp4",      "kind": "interactive",
       "segments": [
         { "from": 74, "to": 139, "scale": 0.86, "offset_x": -4, "offset_y": 10 }
       ] },
-    { "id": "WINK_TRANSITION", "file": "clips/Wink Transition.mp4", "kind": "interactive" }
+    { "id": "WINK_TRANSITION", "file": "clips/Wink Transition.mp4", "kind": "interactive" },
+    { "id": "SHAKE_START",     "file": "clips/Dizzy.mp4",           "kind": "interactive", "from": 25,  "to": 31 },
+    { "id": "SHAKE_LOOP",      "file": "clips/Dizzy.mp4",           "kind": "interactive", "from": 32,  "to": 94 },
+    { "id": "DIZZY",           "file": "clips/Dizzy.mp4",           "kind": "interactive", "from": 95,  "to": 196 }
   ]
 }
