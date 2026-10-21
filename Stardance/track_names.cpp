@@ -62,12 +62,26 @@ namespace {
     "Who Lives, Who Dies, Who Tells Your Story",  // 046
   };
 
+  // folder 03  bunii
+  const char *const TITLES_03[] = {
+    "amnesia",  // 001
+    "Apple of your Eye",  // 002
+    "crash",  // 003
+    "HARANA",  // 004
+    "circles",  // 005
+    "disguise",  // 006
+  };
+
   const Playlist PLAYLISTS[] = {
     { "Hamilton", TITLES_01, 46 },  // folder 01
     { "Sweet Revenge", nullptr, 0 },  // folder 02
-    { "bunii", nullptr, 0 }  // folder 03
+    { "bunii", TITLES_03, 6 },  // folder 03
+    { "Semetary", nullptr, 0 },  // folder 04
+    { "AlYankovic", nullptr, 0 },  // folder 05
+    { "AlexG", nullptr, 0 },  // folder 06
+    { "DivineDestiny", nullptr, 0 }  // folder 07
   };
-  constexpr uint8_t PLAYLIST_COUNT = 3;
+  constexpr uint8_t PLAYLIST_COUNT = 7;
 }
 
 uint8_t playlistCount() { return PLAYLIST_COUNT; }

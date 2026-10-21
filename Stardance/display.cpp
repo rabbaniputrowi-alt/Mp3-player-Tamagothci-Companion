@@ -9,8 +9,12 @@ namespace Display {
 namespace {
   TFT_eSPI tft = TFT_eSPI();
 
+  // One band buffer, shared by whichever view is drawing (disc here, the pet
+  // via bandBuffer()). There used to be a second one (bandB) to ping-pong
+  // with DMA pushes; DMA was reverted, and with blocking pushImage() the
+  // buffer is free again as soon as the push returns. Dropping it saves the
+  // 23 KB the pet needs.
   uint16_t bandA[BAND_PIXELS];   // 23 KB
-  uint16_t bandB[BAND_PIXELS];   // 23 KB
 }
 
 void init() {
@@ -29,14 +33,15 @@ TFT_eSPI &panel() {
   return tft;
 }
 
+uint16_t *bandBuffer() {
+  return bandA;
+}
+
 
 void drawDisc() {
-  uint16_t *buf = bandA;
-
   for (uint8_t b = 0; b < NUM_BANDS; b++) {
-    DiscRenderer::renderBand(buf, b);
-    tft.pushImage(0, b * BAND_H, SCREEN_W, BAND_H, buf);
-    buf = (buf == bandA) ? bandB : bandA;
+    DiscRenderer::renderBand(bandA, b);
+    tft.pushImage(0, b * BAND_H, SCREEN_W, BAND_H, bandA);
   }
 }
 

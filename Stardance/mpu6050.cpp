@@ -1,15 +1,12 @@
 // mpu6050.cpp -- raw register access, no library needed.
 #include "mpu6050.h"
+#include "config.h"   // MPU6050_SDA_PIN / MPU6050_SCL_PIN (I2C0, GP4 / GP5)
 #include <Arduino.h>
 #include <Wire.h>
 
 namespace {
 
-//  wiring 
-const uint8_t PIN_SDA = 4;    // I2C0
-const uint8_t PIN_SCL = 5;
-
-//  mounting 
+//  mounting
 // Which sensor axis points along each screen axis, as printed on the GY-521
 // silkscreen: 1 = X, 2 = Y, 3 = Z, negative = pointing the opposite way.
 // Screen axes, looking at the display: RIGHT, UP, and OUT toward your face.
@@ -65,8 +62,8 @@ namespace Mpu6050 {
 
 bool begin() {
   if (!s_busUp) {               // begin() is called again on every retry
-    Wire.setSDA(PIN_SDA);
-    Wire.setSCL(PIN_SCL);
+    Wire.setSDA(MPU6050_SDA_PIN);
+    Wire.setSCL(MPU6050_SCL_PIN);
     Wire.begin();
     Wire.setClock(400000);
     Wire.setTimeout(20);        // a loose wire must not freeze the animation

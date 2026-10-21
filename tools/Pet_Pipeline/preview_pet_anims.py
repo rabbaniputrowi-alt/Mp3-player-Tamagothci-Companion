@@ -25,10 +25,13 @@ def parse_cpp(path):
     src = open(path).read()
 
     def array(name):
-        m = re.search(name + r"\[[^\]]*\]\s*=\s*\{(.*?)\};", src, re.S)
+        m = re.search(name + r"(?:\[[^\]]*\])+\s*=\s*\{(.*?)\};", src, re.S)
         return m.group(1)
 
-    palette = [int(v, 16) for v in re.findall(r"0x[0-9A-Fa-f]+", array("PET_PALETTE"))]
+    # One row of 8 colours per palette; row 0 is the pet's own.
+    palettes = [[int(v, 16) for v in re.findall(r"0x[0-9A-Fa-f]+", row)]
+                for row in re.findall(r"\{([^{}]*)\}", array("PET_PALETTES"))]
+    frame_pal = [int(v) for v in re.findall(r"\d+", array("PET_FRAME_PALETTE"))]
     rle = bytes(int(v, 16) for v in re.findall(r"0x[0-9A-Fa-f]+", array("PET_RLE")))
     offsets = [int(v) for v in re.findall(r"\d+", array("PET_FRAME_OFFSETS"))]
     anims = []
@@ -37,7 +40,7 @@ def parse_cpp(path):
         steps = [(int(a), int(b)) for a, b in re.findall(r"\{(\d+),(\d+)\}", body.group(1))]
         anims.append((name, steps))
     tick = int(re.search(r"PET_TICK_MS (\d+)", open(path.replace(".cpp", ".h")).read()).group(1))
-    return palette, rle, offsets, anims, tick
+    return palettes, frame_pal, rle, offsets, anims, tick
 
 
 def decode(rle, start, end):
@@ -66,16 +69,19 @@ def main():
     ap.add_argument("--out", default="previews")
     args = ap.parse_args()
 
-    palette, rle, offsets, anims, tick = parse_cpp(os.path.join(args.sketch, "pet_anims.cpp"))
-    lut = np.array([rgb565_to_rgb(v) for v in palette], np.uint8)
+    palettes, frame_pal, rle, offsets, anims, tick = parse_cpp(
+        os.path.join(args.sketch, "pet_anims.cpp"))
+    luts = [np.array([rgb565_to_rgb(v) for v in p], np.uint8) for p in palettes]
     frames = [decode(rle, offsets[i], offsets[i + 1]) for i in range(len(offsets) - 1)]
+    assert len(frame_pal) == len(frames), "PET_FRAME_PALETTE length mismatch"
 
     yy, xx = np.mgrid[:SIZE, :SIZE]
     mask = np.hypot(xx - 119.5, yy - 119.5) <= 120
     bezel = (40, 40, 48)
 
     def render(i):
-        img = lut[frames[i]].copy()
+        # Each frame in the colours PetRenderer will use for it.
+        img = luts[frame_pal[i]][frames[i]].copy()
         img[~mask] = bezel
         return Image.fromarray(img)
 

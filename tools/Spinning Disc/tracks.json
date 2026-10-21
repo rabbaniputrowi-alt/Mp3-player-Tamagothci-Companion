@@ -54,9 +54,7 @@
   {
     "folder": "02",
     "name": "Sweet Revenge",
-    "tracks": [
-      ""
-    ]
+    "tracks": []
   },
   {
     "folder": "03",
@@ -70,5 +68,25 @@
       "disguise"
       
     ]
+  },
+  {
+    "folder": "04",
+    "name": "Semetary",
+    "tracks": []
+  },
+  {
+    "folder": "05",
+    "name": "AlYankovic",
+    "tracks": []
+  },
+  {
+    "folder": "06",
+    "name": "AlexG",
+    "tracks": []
+  },
+  {
+    "folder": "07",
+    "name": "DivineDestiny",
+    "tracks": []
   }
 ]

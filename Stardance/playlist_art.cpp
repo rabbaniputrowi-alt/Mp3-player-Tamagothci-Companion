@@ -13,12 +13,22 @@ namespace {
   constexpr uint8_t HAMILTON_ART[] = { 0 };
   constexpr uint8_t MCR_ART[]      = { 1 };
   constexpr uint8_t BUNII_ART[]    = { 2 };
+  constexpr uint8_t SEMETARY_ART[] = { 3 };
+  constexpr uint8_t YANKOVIC_ART[] = { 4 };
+  constexpr uint8_t ALEXG_ART[]    = { 5 };
+  constexpr uint8_t DIVINE_ART[]   = { 6 };
 
   // Index in this table == AudioPlayer playlist index == SD folder - 1.
+  // The chooser lists exactly this many playlists (playlistCount()), so a
+  // folder without a row here never shows up, whatever albums.cpp holds.
   constexpr PlaylistArtConfig PLAYLIST_ART[] = {
     { HAMILTON_ART, 1 },   // playlist 0 -> folder 01
     { MCR_ART,      1 },   // playlist 1 -> folder 02
-    { BUNII_ART,    1 }    // playlist 2 -> folder 03
+    { BUNII_ART,    1 },   // playlist 2 -> folder 03
+    { SEMETARY_ART, 1 },   // playlist 3 -> folder 04
+    { YANKOVIC_ART, 1 },   // playlist 4 -> folder 05
+    { ALEXG_ART,    1 },   // playlist 5 -> folder 06
+    { DIVINE_ART,   1 }    // playlist 6 -> folder 07
   };
   constexpr uint8_t PLAYLIST_COUNT = sizeof(PLAYLIST_ART) / sizeof(PLAYLIST_ART[0]);
 }

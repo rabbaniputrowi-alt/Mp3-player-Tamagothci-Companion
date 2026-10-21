@@ -6,6 +6,11 @@
 //     LLLLL = 0..30 -> run of 1..31 pixels
 //             31    -> run of 32 + next byte (32..287 pixels)
 //
+// Which 8 colours those indices stand for is looked up per frame:
+// PET_FRAME_PALETTE[frame] picks a row of PET_PALETTES. Row 0 is the pet's
+// own palette; a clip that is not drawn in the pet's colours (the penguin
+// gif) has a row of its own.
+//
 // RAM: 57.6 KB for the unpacked frame + 14.4 KB for the ball table.
 #include "pet_renderer.h"
 #include <math.h>
@@ -33,6 +38,7 @@ const uint8_t* s_p = nullptr;     // next RLE byte
 const uint8_t* s_end = nullptr;   // one past this frame's last byte
 uint16_t s_runLeft = 0;           // pixels still owed from the current run
 uint16_t s_colour = 0;            // RGB565 of the current run
+const uint16_t* s_pal = PET_PALETTES[0];   // the current frame's 8 colours
 
 // ball mode
 uint8_t  s_tex[PET_W * PET_H];    // current frame as palette indices
@@ -51,6 +57,7 @@ void rewindFlat(uint16_t frameIndex) {
   s_p = PET_RLE + PET_FRAME_OFFSETS[frameIndex];
   s_end = PET_RLE + PET_FRAME_OFFSETS[frameIndex + 1];
   s_runLeft = 0;
+  s_pal = PET_PALETTES[PET_FRAME_PALETTE[frameIndex] % PET_PALETTE_COUNT];
 }
 
 // Unpack frames[frameIndex] into s_tex and work out its background colour.
@@ -170,7 +177,7 @@ bool fillPixels(uint16_t* dst, uint32_t count) {
         return false;
       }
       const uint8_t b = *s_p++;
-      s_colour = PET_PALETTE[(b >> 5) % PET_PALETTE_SIZE];
+      s_colour = s_pal[(b >> 5) % PET_PALETTE_SIZE];
       const uint8_t len = b & 31;
       if (len == 31) {
         s_runLeft = 32 + (s_p < s_end ? *s_p++ : 0);
@@ -191,7 +198,7 @@ bool renderBand(uint16_t* dst, uint16_t y0, uint16_t rows) {
   if (!s_ball) return fillPixels(dst, (uint32_t)W * rows);
 
   uint16_t pal[8];
-  for (uint8_t i = 0; i < 8; i++) pal[i] = PET_PALETTE[i % PET_PALETTE_SIZE];
+  for (uint8_t i = 0; i < 8; i++) pal[i] = s_pal[i % PET_PALETTE_SIZE];
   const uint16_t bg = pal[s_bg];
   const int32_t centre = (int32_t)HALF << 16;
   const int32_t ax = 2 * s_ax, ay = 2 * s_ay, aw = 2 * s_aw;
