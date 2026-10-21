@@ -15,6 +15,10 @@
 //   playlist 0 -> SD folder 01 (Hamilton)      -> ALBUMS[0] "Hamilton"
 //   playlist 1 -> SD folder 02 (MCR)           -> ALBUMS[1] "Sweet Revenge"
 //   playlist 2 -> SD folder 03 (bunii)         -> ALBUMS[2] "bunii"
+//   playlist 3 -> SD folder 04 (Semetary)      -> ALBUMS[3] "Semetary"
+//   playlist 4 -> SD folder 05 (Al Yankovic)   -> ALBUMS[4] "AlYankovic"
+//   playlist 5 -> SD folder 06 (Alex G)        -> ALBUMS[5] "AlexG"
+//   playlist 6 -> SD folder 07 (DivineDestiny) -> ALBUMS[6] "DivineDestiny"
 namespace PlaylistArt {
 
   // Given a 0-based playlist index (matches AudioPlayer::currentPlaylist())

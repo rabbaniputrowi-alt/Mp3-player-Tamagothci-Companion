@@ -5,7 +5,8 @@
 #define PET_W 240
 #define PET_H 240
 #define PET_PALETTE_SIZE 8
-#define PET_FRAME_COUNT 525
+#define PET_PALETTE_COUNT 2
+#define PET_FRAME_COUNT 602
 #define PET_TICK_MS 33   // one source video frame
 
 // One timeline step: show frames[frame] for `hold` ticks.
@@ -34,10 +35,15 @@ enum PetAnimId : uint8_t {
   PET_ANIM_SHAKE_START,
   PET_ANIM_SHAKE_LOOP,
   PET_ANIM_DIZZY,
+  PET_ANIM_PENGUIN,
   PET_ANIM_COUNT
 };
 
-extern const uint16_t PET_PALETTE[PET_PALETTE_SIZE];   // RGB565
+// PET_PALETTES[0] is the pet's own palette. A clip with a "palette" of
+// its own in pet_anims.json gets another row, and PET_FRAME_PALETTE says
+// which row each frame was encoded with.
+extern const uint16_t PET_PALETTES[PET_PALETTE_COUNT][PET_PALETTE_SIZE];   // RGB565
+extern const uint8_t  PET_FRAME_PALETTE[PET_FRAME_COUNT];
 extern const uint8_t  PET_RLE[];                        // all frames
 extern const uint32_t PET_FRAME_OFFSETS[PET_FRAME_COUNT + 1];
 extern const PetAnim  PET_ANIMS[PET_ANIM_COUNT];

@@ -18,6 +18,7 @@ uint16_t  s_step = 0;
 uint32_t  s_stepEnd = 0;                      // ms when the current step ends
 uint32_t  s_restUntil = 0;
 uint16_t  s_frame = 0;
+uint16_t  s_reported = 0xFFFF;                // frame update() last told the caller about
 uint16_t  s_restFrame = 0;
 PetAnimId s_lastIdle = PET_ANIM_COUNT;
 uint8_t   s_sinceBubble = 0;                  // idles played since the last bubble face
@@ -43,11 +44,15 @@ void rest(uint32_t now, uint32_t ms) {
   s_restUntil = now + ms;
 }
 
-void start(PetAnimId id, uint32_t now) {
+void start(PetAnimId id, uint32_t now, bool skipLeadIn = false) {
   s_anim = id;
   s_step = 0;
   s_frame = PET_ANIMS[id].steps[0].frame;
-  s_stepEnd = now + (uint32_t)PET_ANIMS[id].steps[0].hold * PET_TICK_MS;
+  uint32_t hold = PET_ANIMS[id].steps[0].hold;
+  // Only a first step that sits on the neutral face is a lead-in. A clip
+  // that opens on something else keeps its timing.
+  if (skipLeadIn && s_frame == s_restFrame) hold = 1;
+  s_stepEnd = now + hold * PET_TICK_MS;
 }
 
 PetAnimId pickIdle() {
@@ -74,7 +79,42 @@ bool chain(PetAnimId finished, uint32_t t) {
     start(keepGoing ? PET_ANIM_SHAKE_LOOP : PET_ANIM_DIZZY, t);
     return true;
   }
+  // The penguin dances on until the sketch stops it (second PLAY or MENU).
+  // Starting it again at `t`, the moment the last step ended, keeps the loop
+  // seamless: the gif's last frame runs straight into its first.
+  if (finished == PET_ANIM_PENGUIN) {
+    start(PET_ANIM_PENGUIN, t);
+    return true;
+  }
   return false;
+}
+
+// Move the state machine on to `now`.
+void advance(uint32_t now) {
+  if (s_anim == PET_ANIM_COUNT) {
+    if (reached(now, s_restUntil)) start(pickIdle(), now);
+    return;
+  }
+
+  // The shaking stopped: cut the loop short and go dizzy.
+  if (s_anim == PET_ANIM_SHAKE_LOOP && !s_shaking && reached(now, s_shakeMinUntil)) {
+    start(PET_ANIM_DIZZY, now);
+    return;
+  }
+
+  // Advance; if we fell behind (slow draw), skip frames to stay in time.
+  while (reached(now, s_stepEnd)) {
+    const PetAnim& a = PET_ANIMS[s_anim];
+    if (++s_step >= a.stepCount) {
+      if (chain(s_anim, s_stepEnd)) continue;
+      bool wasInteractive = a.kind == PET_KIND_INTERACTIVE;
+      rest(now, wasInteractive ? REST_AFTER_INTERACTIVE_MS
+                               : rndRange(REST_MIN_MS, REST_MAX_MS));
+      return;
+    }
+    s_frame = a.steps[s_step].frame;
+    s_stepEnd += (uint32_t)a.steps[s_step].hold * PET_TICK_MS;
+  }
 }
 
 } 
@@ -88,37 +128,21 @@ void begin(uint32_t nowMs, uint32_t seed) {
   s_lastIdle = PET_ANIM_COUNT;
   s_sinceBubble = 0;
   s_shaking = false;
+  s_reported = 0xFFFF;                        // nothing drawn yet
   rest(nowMs, rndRange(REST_MIN_MS / 2, REST_MAX_MS / 2));
 }
 
 bool update(uint32_t now) {
-  const uint16_t before = s_frame;
-
-  if (s_anim == PET_ANIM_COUNT) {
-    if (reached(now, s_restUntil)) start(pickIdle(), now);
-    return s_frame != before;
-  }
-
-  // The shaking stopped: cut the loop short and go dizzy.
-  if (s_anim == PET_ANIM_SHAKE_LOOP && !s_shaking && reached(now, s_shakeMinUntil)) {
-    start(PET_ANIM_DIZZY, now);
-    return s_frame != before;
-  }
-
-  // Advance; if we fell behind (slow draw), skip frames to stay in time.
-  while (reached(now, s_stepEnd)) {
-    const PetAnim& a = PET_ANIMS[s_anim];
-    if (++s_step >= a.stepCount) {
-      if (chain(s_anim, s_stepEnd)) continue;
-      bool wasInteractive = a.kind == PET_KIND_INTERACTIVE;
-      rest(now, wasInteractive ? REST_AFTER_INTERACTIVE_MS
-                               : rndRange(REST_MIN_MS, REST_MAX_MS));
-      return s_frame != before;
-    }
-    s_frame = a.steps[s_step].frame;
-    s_stepEnd += (uint32_t)a.steps[s_step].hold * PET_TICK_MS;
-  }
-  return s_frame != before;
+  advance(now);
+  // "Changed" is measured against the frame the caller was last told about,
+  // not against the frame at the top of this call. trigger(), play() and
+  // setShaking() put a clip's first frame in place before update() runs, and
+  // comparing within the call missed that frame: it was only drawn once the
+  // clip reached its second step. That did not show while every clip opened
+  // on the neutral face; PENGUIN does not, and lost its first 0.1 s.
+  const bool changed = s_frame != s_reported;
+  s_reported = s_frame;
+  return changed;
 }
 
 uint16_t currentFrame() { return s_frame; }
@@ -133,7 +157,20 @@ bool trigger(PetAnimId id, uint32_t now) {
   return true;
 }
 
+void play(PetAnimId id, uint32_t now, bool skipLeadIn) {
+  if (id >= PET_ANIM_COUNT) return;
+  start(id, now, skipLeadIn);
+}
+
+void stop(uint32_t now) {
+  rest(now, REST_AFTER_INTERACTIVE_MS);
+}
+
 void setShaking(bool shaking, uint32_t now) {
+  // Only the buttons end the penguin, so shaking does not count while it
+  // plays. s_shaking stays false meanwhile, which means a shake still going
+  // on when it is stopped is seen as a new one and starts straight away.
+  if (s_anim == PET_ANIM_PENGUIN) shaking = false;
   const bool began = shaking && !s_shaking;
   s_shaking = shaking;
   if (!began || inShake()) return;

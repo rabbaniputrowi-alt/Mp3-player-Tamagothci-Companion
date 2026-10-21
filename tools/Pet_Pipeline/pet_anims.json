@@ -13,6 +13,9 @@
     { "id": "WINK_TRANSITION", "file": "clips/Wink Transition.mp4", "kind": "interactive" },
     { "id": "SHAKE_START",     "file": "clips/Dizzy.mp4",           "kind": "interactive", "from": 25,  "to": 31 },
     { "id": "SHAKE_LOOP",      "file": "clips/Dizzy.mp4",           "kind": "interactive", "from": 32,  "to": 94 },
-    { "id": "DIZZY",           "file": "clips/Dizzy.mp4",           "kind": "interactive", "from": 95,  "to": 196 }
+    { "id": "DIZZY",           "file": "clips/Dizzy.mp4",           "kind": "interactive", "from": 95,  "to": 196 },
+    { "id": "PENGUIN",         "file": "clips/Penguin.gif",         "kind": "interactive",
+      "scale": 1.0, "offset_x": 0, "offset_y": 0,
+      "palette": ["#171C40", "#13126B", "#2D2D99", "#6A4038", "#A8694F", "#474B6E", "#69708E", "#ADA5BA"] }
   ]
 }

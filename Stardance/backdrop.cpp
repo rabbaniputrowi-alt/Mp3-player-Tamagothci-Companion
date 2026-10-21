@@ -24,8 +24,22 @@ namespace {
   static_assert(SCREEN_W % CELL == 0, "UI_BG_CELL must divide the screen");
   static_assert(UI_BG_DIM <= 240, "dim must leave headroom for dithering");
 
-  uint8_t *thumbs     = nullptr;
-  uint8_t  thumbCount = 0;
+  // Thumbnails are built on demand into a few cache slots, not one per album
+  // at boot. One thumbnail is PLANE bytes (10,800 at UI_BG_CELL 4), so
+  // building them all made the heap grow with every album: 7 albums need
+  // 75 KB, and the chooser sprite allocated right after then fails, which
+  // leaves the chooser blank. The chooser only ever shows two at once (the
+  // blend between neighbouring rows), so 3 slots let one be rebuilt while the
+  // other two stay put. A rebuild is one pass over the album art in flash,
+  // roughly 10-20 ms, once per album that scrolls into view.
+  constexpr uint8_t SLOTS = 3;
+
+  uint8_t *cache     = nullptr;    // slotCount * PLANE thumbnails, then N * N scratch
+  uint8_t *scratch   = nullptr;    // `valid` flags for buildThumb()
+  uint8_t  slotCount = 0;
+  int16_t  slotArt[SLOTS];         // album in each slot, -1 = empty
+  uint32_t slotUsed[SLOTS];        // when it was last asked for (0 = never)
+  uint32_t useClock  = 0;
 
   const uint8_t *srcA = nullptr;
   const uint8_t *srcB = nullptr;
@@ -142,8 +156,25 @@ namespace {
     for (int i = 0; i < PLANE; i++) t[i] = (uint8_t)((t[i] * scale) >> 8);
   }
 
+  // Thumbnail of album `art`, built into the least recently used slot if it
+  // is not cached yet. Asking for one makes it the most recent, so the next
+  // call can never evict it while two or more slots exist.
   const uint8_t *thumbFor(uint8_t art) {
-    return (thumbs && art < thumbCount) ? thumbs + art * PLANE : nullptr;
+    if (!cache || art >= ALBUM_COUNT) return nullptr;
+    useClock++;
+    uint8_t victim = 0;
+    for (uint8_t s = 0; s < slotCount; s++) {
+      if (slotArt[s] == art) {
+        slotUsed[s] = useClock;
+        return cache + s * PLANE;
+      }
+      if (slotUsed[s] < slotUsed[victim]) victim = s;   // empty slots are 0, so they go first
+    }
+    uint8_t *t = cache + victim * PLANE;
+    buildThumb(ALBUMS[art], t, scratch);
+    slotArt[victim]  = art;
+    slotUsed[victim] = useClock;
+    return t;
   }
 
   inline int blended(int idx) {
@@ -161,26 +192,33 @@ void init() {
     halfChord[y] = (v <= 0) ? 0 : (uint8_t)sqrtf((float)v);
   }
 
-  thumbCount = ALBUM_COUNT;
-  thumbs = thumbCount ? (uint8_t *)malloc((size_t)thumbCount * PLANE) : nullptr;
-  if (!thumbs) thumbCount = 0;
-
-  uint8_t *valid = thumbCount ? (uint8_t *)malloc(N * N) : nullptr;
-  if (!valid) {
-    free(thumbs);
-    thumbs = nullptr;
-    thumbCount = 0;
+  // One block, the same size however many albums there are: SLOTS
+  // thumbnails plus buildThumb()'s scratch, 36,000 bytes at UI_BG_CELL 4.
+  // If that does not fit, take fewer slots (more rebuilds; with one slot the
+  // blend shows a single album, see setBlend()). With none the backdrop is
+  // black, as before.
+  free(cache);
+  cache = nullptr;
+  for (slotCount = SLOTS; slotCount > 0; slotCount--) {
+    cache = (uint8_t *)malloc((size_t)slotCount * PLANE + N * N);
+    if (cache) break;
   }
-  for (uint8_t k = 0; k < thumbCount; k++) buildThumb(ALBUMS[k], thumbs + k * PLANE, valid);
-  free(valid);
+  scratch = cache ? cache + slotCount * PLANE : nullptr;
+  for (uint8_t s = 0; s < SLOTS; s++) {
+    slotArt[s]  = -1;
+    slotUsed[s] = 0;
+  }
+  useClock = 0;
 
   srcA = srcB = nullptr;
   wB = 0;
 }
 
 void setBlend(uint8_t artA, uint8_t artB, uint8_t t) {
+  // With a single slot, fetching B would be built over A: show A alone.
+  if (slotCount < 2) { artB = artA; t = 0; }
   const uint8_t *a = thumbFor(artA);
-  const uint8_t *b = thumbFor(artB);
+  const uint8_t *b = (artB == artA) ? a : thumbFor(artB);
   if (!a) { a = b; t = 0; }
   if (!b || b == a) t = 0;
   srcA = a;
