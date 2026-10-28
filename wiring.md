@@ -1,55 +1,48 @@
-This file basically displays the basic wiring shceme for this project
-couldnt find a good software to create wiring diagrams on with all my components so im writting this instead
-
-# NEW PARTS
-- Waveshare RP2040 Zero
-- TFT Round display
-- MPU 6050
-- 2 pin tactile buttons (4x)
-- DFPlayer
-- JP-307 Stereo Jack Barrel
-- Jumper Wires U
-- Breadboard
-- 3.7 Lip Battery 1200mAh
-- Charging Module
-
 # Wiring
-## DFplayer
-VCC -> 3.3v Rail
-RX -> GPIO 28
-TX -> GPIO 29
-DAC_R -> Ring (PJ_307)
-DAC_L -> Tip (PJ-307)
-GND -> GND Rail
 
-## JP-307 Jack Barrel
-P.S verify pins with multimeter on continuity mode
-Ring -> DAC_R
-Tip -> DAC_L
-Sleeve -> GND Rail
+Wiring reference for the breadboard prototype and the carrier PCB (v2). I could not find a good tool for a wiring diagram with all these parts, so this is a table.
 
-## TFT Round Display
-RST -> GPIO 8
-CS -> GPIO 6
-DC -> GPIO 7
-SDA -> GPIO 14
-SCL -> GPIO 15
-GND -> GND Rail
-VCC -> 3v3 Rail
+The earlier version of this file had the display SDA and SCL swapped. The working wiring is SCL (clock) on GP14 and SDA (data) on GP15.
 
-## MPU 6050
-SDA -> GPIO 4
-SCL -> GPIO 5
-GND -> GND Rail
-VCC -> 3v3 Rail
+Where the breadboard and the PCB differ, the note says so. Verify jack pins with a multimeter in continuity mode.
 
-## Tactile Buttons
-btn1 -> GPIO 0
-btn2 -> GPIO 1
-btn3 -> GPIO 2
-btn4 -> GPIO 3
+| Signal | Pin | Note |
+|---|---|---|
+| Display SCL (SPI clock) | GP14 | Module is labelled with I2C names, but it is SPI. Clock goes here. |
+| Display SDA (SPI data) | GP15 | Data line. SPI1 can only take SCK on GP10/14/26 and TX on GP11/15/27, so these two cannot be swapped. |
+| Display CS | GP6 | |
+| Display DC | GP7 | |
+| Display RST | GP8 | |
+| Display VCC | 3V3 | |
+| Display GND | GND | No backlight pin on this module. |
+| DFPlayer RX | GP28 (MCU TX) | Through a 1k series resistor. |
+| DFPlayer TX | GP29 (MCU RX) | UART0 = Serial1. |
+| DFPlayer BUSY | GP27 | Through a 10k resistor. LOW while playing. Used for autoplay. |
+| DFPlayer VCC | 3.3 V rail (breadboard), VSYS (PCB) | The PCB design powers it from VSYS. |
+| DFPlayer GND | GND | |
+| DFPlayer DAC_L | Jack tip | |
+| DFPlayer DAC_R | Jack ring | |
+| Jack sleeve (PJ-307) | GND | Three-conductor TRS, no mic line. |
+| MPU6050 SDA | GP4 | I2C0 |
+| MPU6050 SCL | GP5 | I2C0 |
+| MPU6050 VCC | 3V3 | |
+| MPU6050 GND | GND | |
+| Button PREV | GP0 | Other leg to GND. INPUT_PULLUP, active low. |
+| Button PLAY | GP1 | Same. |
+| Button NEXT | GP2 | Same. |
+| Button MENU | GP3 | Same. |
+| Battery sense | GP26 (ADC) | PCB design: 100k/100k divider from the battery supply to GND, midpoint to GP26, so the pin sees half the battery voltage. Check the tap point against the schematic. The old breadboard notes do not record a divider. |
+| Battery | VSYS | Not 3V3. PCB: LiPo through the TP4056 charger (USB-C), DW01A + FS8205A protection and an SS14 diode into VSYS. Breadboard: a separate charging module. |
 
-## Waveshare RP2040 Zero
-- All of the GPIO pins cited above
-- 3v3  -> +Rail = 3v3 Rail
-= GND -> -Rail = GND Rail
+GP9 to GP13 are not reachable on the RP2040-Zero and are not used.
+
+## Parts on the breadboard
+
+- Waveshare RP2040-Zero
+- GC9A01 round display
+- MPU6050 (GY-521)
+- 4 tactile buttons
+- DFPlayer Mini
+- PJ-307 stereo jack
+- 3.7 V 1200 mAh LiPo and a charging module
+- Breadboard and jumper wires

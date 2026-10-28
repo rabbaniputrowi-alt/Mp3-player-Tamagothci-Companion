@@ -62,24 +62,183 @@ namespace {
     "Who Lives, Who Dies, Who Tells Your Story",  // 046
   };
 
+  // folder 02  Sweet Revenge
+  const char *const TITLES_02[] = {
+    "Cancer",  // 001
+    "I Don't Love You",  // 002
+    "I'm Not Okay (I Promise)",  // 003
+    "The Ghost of You",  // 004
+    "Famous Last Words",  // 005
+    "Cemetery Drive",  // 006
+    "Sleep",  // 007
+    "House of Wolves",  // 008
+    "Thank You for the Venom",  // 009
+    "Dead!",  // 010
+    "You Know What They Do to Guys Like Us in Prison",  // 011
+    "Disenchanted",  // 012
+    "The Sharpest Lives",  // 013
+    "To the End",  // 014
+    "It's Not a Fashion Statement, It's a Deathwish",  // 015
+    "Mama",  // 016
+    "Give 'Em Hell, Kid",  // 017
+    "I Never Told You What I Do for a Living",  // 018
+    "Welcome to the Black Parade",  // 019
+    "Demolition Lovers",  // 020
+    "The World Is Ugly",  // 021
+    "Boy Division",  // 022
+    "AMBULANCE",  // 023
+    "Hang 'Em High",  // 024
+    "Our Lady of Sorrows",  // 025
+    "Vampires Will Never Hurt You",  // 026
+    "Headfirst for Halos",  // 027
+    "My Way Home Is Through You",  // 028
+    "Skylines and Turnstiles",  // 029
+    "Interlude",  // 030
+    "Cubicles",  // 031
+    "Drowning Lessons",  // 032
+    "Helena",  // 033
+    "The Jetset Life Is Gonna Kill You",  // 034
+    "Honey, This Mirror Isn't Big Enough for the Two of Us",  // 035
+    "The End.",  // 036
+  };
+
   // folder 03  bunii
   const char *const TITLES_03[] = {
-    "amnesia",  // 001
-    "Apple of your Eye",  // 002
-    "crash",  // 003
+    "COYOTES",  // 001
+    "TETHERED",  // 002
+    "THE ANOMALY ON RODAYO",  // 003
     "HARANA",  // 004
-    "circles",  // 005
-    "disguise",  // 006
+    "I SEE DEAD PEOPLE",  // 005
+    "BIG DAN TEAGUE KILLED PETE",  // 006
+    "MAYARI",  // 007
+    "amnesia",  // 008
+    "apple of your eye",  // 009
+    "crash",  // 010
+    "circles",  // 011
+    "disguise",  // 012
+    "eatmydust",  // 013
+    "eve",  // 014
+    "galore galore galore",  // 015
+    "GOOD RIDDANCE",  // 016
+    "insomniac",  // 017
+    "jane the killer",  // 018
+    "leaveme2rott",  // 019
+    "NEED IT",  // 020
+    "not a game",  // 021
+    "noxious",  // 022
+    "rune",  // 023
+    "Sacrifice",  // 024
+    "SAINT",  // 025
+    "so good",  // 026
+    "theirthoughts",  // 027
+  };
+
+  // folder 04  Semetary
+  const char *const TITLES_04[] = {
+    "world's a f *red room valentine*",  // 001
+    "Raging Wolf",  // 002
+    "Slaughter House",  // 003
+    "Funeral",  // 004
+    "Bunny Suit",  // 005
+    "Reverence",  // 006
+    "Shotgun",  // 007
+    "Cemetery",  // 008
+  };
+
+  // folder 05  AlYankovic
+  const char *const TITLES_05[] = {
+    "Polka Face",  // 001
+    "Polkamania!",  // 002
+    "Now That's What I Call Polka Animated Collab",  // 003
+    "Polkarama!",  // 004
+    "Polka Power!",  // 005
+    "The Hamilton Polka",  // 006
+    "art is dead.",  // 007
+    "Second Sight Seer! S! (2222024 Edit)",  // 008
+  };
+
+  // folder 06  AlexG
+  const char *const TITLES_06[] = {
+    "Serpent Is Lord",  // 001
+    "Harvey",  // 002
+    "After Ur Gone",  // 003
+    "Rejoyce",  // 004
+    "Black Hair",  // 005
+    "Skipper",  // 006
+    "Axesteel",  // 007
+    "Sorry",  // 008
+    "Promise",  // 009
+    "Icehead",  // 010
+    "Hollow",  // 011
+    "Tripper",  // 012
+    "Soaker",  // 013
+    "Waiting For You",  // 014
+    "Boy",  // 015
+    "Memory",  // 016
+    "Forever",  // 017
+    "Animals",  // 018
+    "String",  // 019
+    "Advice",  // 020
+    "People",  // 021
+    "Whale",  // 022
+    "Trick",  // 023
+    "Kute",  // 024
+    "So",  // 025
+    "Mary",  // 026
+    "Change",  // 027
+    "Clouds",  // 028
+    "Adam",  // 029
+    "Sarah",  // 030
+    "16 Mirrors",  // 031
+    "Come Back",  // 032
+    "Water",  // 033
+    "Fighting",  // 034
+    "Candy",  // 035
+    "Wicked Boy",  // 036
+    "Mis",  // 037
+    "Master",  // 038
+    "Know Now",  // 039
+    "Rules",  // 040
+    "Message",  // 041
+    "Sandy",  // 042
+    "Good",  // 043
+    "New",  // 044
+    "world/insured",  // 045
+    "not anywhere",  // 046
+    "fay",  // 047
+    "Break",  // 048
+    "Pretend",  // 049
+    "I Wait for You",  // 050
+    "Sometimes",  // 051
+    "east coast",  // 052
+    "trick - acoustic",  // 053
+    "written in blood",  // 054
+    "nintendo 64",  // 055
+  };
+
+  // folder 07  DivineDestiny
+  const char *const TITLES_07[] = {
+    "censoring sea",  // 001
+    "letters",  // 002
+    "me and me",  // 003
+    "tag, you're it",  // 004
+    "a stolen house",  // 005
+    "I Have Better Things to Not Do",  // 006
+    "cycle of mortality",  // 007
+    "friday night lights",  // 008
+    "Jikan o Nanoru Tenshi",  // 009
+    "In Between - remade",  // 010
+    "a full surrender",  // 011
   };
 
   const Playlist PLAYLISTS[] = {
     { "Hamilton", TITLES_01, 46 },  // folder 01
-    { "Sweet Revenge", nullptr, 0 },  // folder 02
-    { "bunii", TITLES_03, 6 },  // folder 03
-    { "Semetary", nullptr, 0 },  // folder 04
-    { "AlYankovic", nullptr, 0 },  // folder 05
-    { "AlexG", nullptr, 0 },  // folder 06
-    { "DivineDestiny", nullptr, 0 }  // folder 07
+    { "Sweet Revenge", TITLES_02, 36 },  // folder 02
+    { "bunii", TITLES_03, 27 },  // folder 03
+    { "Semetary", TITLES_04, 8 },  // folder 04
+    { "AlYankovic", TITLES_05, 8 },  // folder 05
+    { "AlexG", TITLES_06, 55 },  // folder 06
+    { "DivineDestiny", TITLES_07, 11 }  // folder 07
   };
   constexpr uint8_t PLAYLIST_COUNT = 7;
 }
