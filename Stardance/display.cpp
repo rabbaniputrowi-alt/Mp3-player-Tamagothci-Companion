@@ -3,6 +3,7 @@
 #include "album_store.h"
 #include "config.h"
 #include <TFT_eSPI.h>
+#include <math.h>
 
 namespace Display {
 
@@ -35,6 +36,37 @@ TFT_eSPI &panel() {
 
 uint16_t *bandBuffer() {
   return bandA;
+}
+
+void pushRows(const uint16_t *band, int bandTop, int y0, int y1) {
+#if UI_PUSH_ROUND
+  // Half-width of the glass per row, built on first use.
+  static uint8_t half[SCREEN_H];
+  static bool    halfReady = false;
+  if (!halfReady) {
+    const float r = SCREEN_W / 2.0f;
+    for (int y = 0; y < SCREEN_H; y++) {
+      const float dy = y + 0.5f - r;
+      const float v  = r * r - dy * dy;
+      int h = v > 0 ? (int)ceilf(sqrtf(v)) + 1 : 0;
+      if (h > SCREEN_W / 2) h = SCREEN_W / 2;
+      half[y] = (uint8_t)h;
+    }
+    halfReady = true;
+  }
+  // One SPI transaction for all the rows, so each row only costs its
+  // address window, not a chip-select cycle.
+  tft.startWrite();
+  for (int y = y0; y <= y1; y++) {
+    const int h = half[y];
+    if (!h) continue;
+    const int x0 = SCREEN_W / 2 - h;
+    tft.pushImage(x0, y, 2 * h, 1, (uint16_t *)(band + (y - bandTop) * SCREEN_W + x0));
+  }
+  tft.endWrite();
+#else
+  tft.pushImage(0, y0, SCREEN_W, y1 - y0 + 1, (uint16_t *)(band + (y0 - bandTop) * SCREEN_W));
+#endif
 }
 
 

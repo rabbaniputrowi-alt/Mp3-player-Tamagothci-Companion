@@ -39,4 +39,11 @@ namespace AudioPlayer {
   // to a fixed guess if the module doesn't answer. Cached per playlist.
   uint8_t trackCount(uint8_t playlist);
 
+  // Autoplay. Call every loop(): reads the DFPlayer's serial messages and,
+  // when it reports that the current track finished, moves on to the next
+  // track in the playlist (wrapping to track 1 after the last one, same as
+  // next()). Returns true when it started a new track, so the caller can
+  // update the album art.
+  bool serviceAutoplay(uint32_t nowMs);
+
 }
