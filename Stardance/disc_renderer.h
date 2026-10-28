@@ -5,9 +5,12 @@
 // writes rotated RGB565 output into a caller-supplied band buffer.
 //
 // The album cover fills the round panel edge to edge and simply spins.
-// No vinyl plate, grooves or outer ring — those were tried and removed.
 // build_albums.py masks each cover to a circle of radius DISC_R, so the
-// art's own edge is the visible edge of the display.
+// art's own edge is the visible edge of the display. No vinyl plate or
+// outer ring — those stay rejected. With DISC_GROOVES the surface carries
+// the mock's groove gradient (added 2026-10-25), the same one as the
+// chooser's small records, computed in screen space so it doesn't spin with
+// the disc. Not the mock's glare too — see disc_renderer.cpp for why.
 namespace DiscRenderer {
 
   // Call once at boot. Builds the chord table (per-row half-widths

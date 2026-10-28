@@ -1,30 +1,38 @@
 // Stardance: MP3 player + Tamagotchi-style pet on one round display.
 //
-// Views and buttons:
-//   PET / PLAYING (disc)  PREV / NEXT  previous / next track
+// Views and buttons (each view owns PREV / PLAY / NEXT, so a press does
+// exactly one thing; split this way on 2026-10-26):
+//   PLAYING (disc)        PREV / NEXT  previous / next track
 //                         PLAY         play / pause
-//                         MENU short   open the playlist chooser
+//   PET                   PREV         WINK
+//                         NEXT         WINK_TRANSITION (affection)
+//                         PLAY         PENGUIN on / off (the dancing penguin
+//                                      gif, full screen in its own colours)
+//                         The music is not touched from the pet view.
+//   Both                  MENU short   open the playlist chooser
 //                         MENU held    swap pet <-> disc
-//   In the pet view the pet also reacts: PREV -> WINK, NEXT ->
-//   WINK_TRANSITION (affection), PLAY -> PENGUIN (the dancing penguin gif,
-//   full screen in its own colours). The penguin loops until PLAY is pressed
-//   again or MENU is pressed (short or held); PREV, NEXT and shaking leave it
-//   dancing.
+//   The penguin loops until PLAY is pressed again or MENU is pressed (short
+//   or held); PREV, NEXT and shaking leave it dancing.
+//   Autoplay: when a track ends the next one in the playlist starts (wrapping
+//   to track 1 after the last), in every view.
 //   From the pet view the chooser does not cut in at once: the pet plays
 //   MUSIC_SPIN first as the transition (wink, spin down to a dot, music-note
 //   face, spin out to a dot) and the chooser opens when the clip ends. A
 //   second short MENU while it plays skips the rest. From the disc view the
 //   chooser opens straight away.
-//   PLAYLIST_SELECT       PREV / NEXT scroll, PLAY open tracks, MENU back
-//   TRACK_SELECT          PREV / NEXT scroll, PLAY play it, MENU back
+//   PLAYLIST_SELECT       PREV / NEXT turn the arc (it wraps), PLAY open the
+//                         playlist, MENU back
+//   TRACK_SELECT          PREV / NEXT roll the barrel, PLAY play it, MENU back
 //   Backing out of the chooser (or picking a track) returns to the view it
-//   was opened from (homeView).
+//   was opened from (homeView). From the disc view that means the album
+//   spins up again with the new track (setSpinning + replay snap-back).
 //
 // Board: waveshare_rp2040_zero, arduino-pico core.
 // The pet data is ~1.2 MB: Tools > Flash Size must be "2MB (no FS)".
 
 #include "config.h"
 #include "audio_player.h"
+#include "battery.h"
 #include "album_store.h"
 #include "playlist_art.h"
 #include "disc_renderer.h"
@@ -116,14 +124,15 @@ namespace {
   void handlePrevNext(int8_t delta, uint32_t now) {
     switch (appState) {
       case AppState::PET:
+        // Pet only, the music is left alone. trigger() returning false (an
+        // interactive clip is already playing) is fine to ignore.
+        Pet::trigger(delta < 0 ? PET_ANIM_WINK : PET_ANIM_WINK_TRANSITION, now);
+        break;
+
       case AppState::PLAYING:
         if (delta < 0) AudioPlayer::previous();
         else           AudioPlayer::next();
         syncArt();
-        // The music action always happens; trigger() returning false (an
-        // interactive clip is already playing) is fine to ignore.
-        if (appState == AppState::PET)
-          Pet::trigger(delta < 0 ? PET_ANIM_WINK : PET_ANIM_WINK_TRANSITION, now);
         break;
 
       case AppState::PLAYLIST_SELECT:
@@ -136,30 +145,34 @@ namespace {
   void handlePlay(uint32_t now) {
     switch (appState) {
       case AppState::PET:
-      case AppState::PLAYING:
-        AudioPlayer::togglePlayPause();
-        // Also in the pet view, so the disc is right when it is swapped in.
-        DiscRenderer::setSpinning(AudioPlayer::isPlaying());
         // PLAY's pet reaction is the penguin gif. (MUSIC_SPIN used to sit in
         // this slot; it is the transition into the chooser now, see
         // handleMenuShort.) The penguin loops until it is stopped, so PLAY
         // works as an on / off switch for it: the first press starts it, the
-        // next one sends the pet back to its neutral face. As with PREV /
-        // NEXT the music action always happens, and trigger() returning false
-        // (another interactive clip, e.g. a wink, is playing) is fine to
-        // ignore.
-        if (appState == AppState::PET) {
-          if (Pet::currentAnim() == PET_ANIM_PENGUIN) Pet::stop(now);
-          else                                        Pet::trigger(PET_ANIM_PENGUIN, now);
-        }
+        // next one sends the pet back to its neutral face. The music is not
+        // paused from here any more. trigger() returning false (another
+        // interactive clip, e.g. a wink, is playing) is fine to ignore.
+        if (Pet::currentAnim() == PET_ANIM_PENGUIN) Pet::stop(now);
+        else                                        Pet::trigger(PET_ANIM_PENGUIN, now);
         break;
 
-      case AppState::PLAYLIST_SELECT:
-        PlaylistUI::openTracks(PlaylistUI::selectedIndex(), 1);
+      case AppState::PLAYING:
+        AudioPlayer::togglePlayPause();
+        DiscRenderer::setSpinning(AudioPlayer::isPlaying());
+        break;
+
+      case AppState::PLAYLIST_SELECT: {
+        // Open on the playing track if this is the playlist that is playing.
+        const uint8_t p = PlaylistUI::selectedIndex();
+        const uint8_t t = (p == AudioPlayer::currentPlaylist()) ? AudioPlayer::currentTrack() : 1;
+        PlaylistUI::openTracks(p, t);
         appState = AppState::TRACK_SELECT;
         break;
+      }
 
       case AppState::TRACK_SELECT:
+        // Play it and go back to the view the chooser was opened from. On
+        // the disc view the album spins up with the new track.
         if (PlaylistUI::itemCount()) {
           startPlayback(PlaylistUI::listPlaylist(),
                         (uint8_t)(PlaylistUI::selectedIndex() + 1));
@@ -229,19 +242,26 @@ void setup() {
   DiscRenderer::init();
   Display::init();
 
-  // The chooser's two heap allocations (backdrop thumbnail cache + sprite),
-  // kept early. Both fail silently, so print the drop: it should be about
-  // 59 KB (36,000 cache + 23,040 sprite), however many albums there are. A
-  // smaller drop means one failed. (Before 2026-10-12 the backdrop built one
-  // 10,800-byte thumbnail per album here, which stopped fitting at 7 albums.)
+  // The chooser's one heap allocation (the backdrop thumbnail cache), kept
+  // early. It fails silently, so print the drop: it should be about 11.7 KB
+  // (the 3-slot backdrop cache, 11,700 bytes), however many albums there are.
+  // A smaller drop means the cache got fewer slots. The record-label cache
+  // that used to add 3 x 12,152 bytes was removed on 2026-10-25 (MiniRecord
+  // samples the art in flash directly), so "labels" below always prints 0.
+  // (Since 2026-10-25 the chooser draws into Display::bandBuffer() instead
+  // of its own 23 KB sprite, and the backdrop cells are 8 px, not 4.)
   const uint32_t heapBefore = rp2040.getFreeHeap();
-  PlaylistUI::init();
+  const uint32_t labelBytes = PlaylistUI::init();
   const uint32_t heapAfter = rp2040.getFreeHeap();
-  Serial.printf("free heap %lu -> %lu (chooser took %lu)\n",
+  Serial.printf("free heap %lu -> %lu (chooser took %lu, labels %lu)\n",
                 (unsigned long)heapBefore, (unsigned long)heapAfter,
-                (unsigned long)(heapBefore - heapAfter));
+                (unsigned long)(heapBefore - heapAfter), (unsigned long)labelBytes);
 
   AudioPlayer::init();
+  // Battery before the pet: PetScreen::init() seeds its RNG with
+  // analogRead(26), and Battery::init() is what sets the ADC to 12 bits on
+  // that same pin. Harmless either way, the seed only needs to be noisy.
+  Battery::init();
   PetScreen::init(millis());
 
   AudioPlayer::playPlaylist(0, 1);
@@ -261,6 +281,21 @@ void loop() {
     case Press::SHORT_UP:  handleMenuShort(now); break;
     case Press::LONG_HOLD: handleMenuHold(now);  break;
     default: break;
+  }
+
+  // Autoplay, in every view. The art only changes if the playlist cycles
+  // covers per track; with one cover per folder syncArt() is a no-op.
+  if (AudioPlayer::serviceAutoplay(now)) syncArt();
+
+  // Battery: samples about once a second inside service(), which is just a
+  // millis() compare the rest of the time. Only data, no UI and the music is
+  // never touched (see battery.h). The Serial line is every 10 s and lives
+  // here in loop(), never in a draw path.
+  Battery::service(now);
+  static uint32_t lastBatteryPrintMs = 0;
+  if (now - lastBatteryPrintMs >= 10000) {
+    lastBatteryPrintMs = now;
+    Serial.printf("battery %.2f V %u %%\n", Battery::volts(), (unsigned)Battery::percent());
   }
 
   now = millis();
@@ -289,3 +324,13 @@ void loop() {
     }
   }
 }
+
+#if UI_DUAL_CORE
+// Core 1 only helps the chooser draw: it renders the next band while core 0
+// pushes the current one (see PlaylistUI::draw()). Between frames it waits.
+void setup1() {}
+
+void loop1() {
+  PlaylistUI::core1Service();
+}
+#endif

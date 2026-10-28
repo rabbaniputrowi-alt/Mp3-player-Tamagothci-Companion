@@ -8,7 +8,11 @@ namespace AudioPlayer {
 namespace {
   DFRobotDFPlayerMini dfplayer;
 
-  constexpr uint8_t DEFAULT_VOLUME = 20;   // 0-30 range for this module
+  // 0-30 range for this module (30 = max). Half scale, not max: Stardance.ino
+  // auto-plays folder 01 track 1 at boot straight into the earbuds, and full
+  // volume is painfully loud there. There is no volume control on the
+  // buttons yet (all four are allocated), so this is the level it stays at.
+  constexpr uint8_t DEFAULT_VOLUME = 15;
 
   // module fallback
   constexpr uint8_t FALLBACK_TRACK_COUNT = 8;
@@ -16,6 +20,32 @@ namespace {
   uint8_t curPlaylist = 0;  // 0-based, ALBUMS[] index
   uint8_t curTrack     = 1;  // 1-based, SD card file number within the folder
   bool    playing      = false;
+
+  // Autoplay. The module sends a "play finished" message (0x3D) when a
+  // track ends; genuine chips send it twice and some clones also send one
+  // right after a new play command. Anything that arrives within
+  // FINISH_GUARD_MS of our last play command is treated as that echo and
+  // ignored, so one finished track only ever advances once.
+  constexpr uint32_t FINISH_GUARD_MS = 1500;
+  uint32_t lastPlayCmdMs = 0;
+
+  // Autoplay, second source: the BUSY pin, LOW while a track plays. Some
+  // clones never send the "finished" message, so a track counts as done
+  // when BUSY has been HIGH for BUSY_IDLE_MS while we think we are playing.
+  // The pin has a pull-up, so if nothing is wired to it it reads HIGH for
+  // ever; busyWorks stays false until BUSY has been seen LOW once, and until
+  // then the pin is ignored (otherwise an unwired pin would skip a track
+  // every couple of seconds).
+  constexpr uint32_t BUSY_IDLE_MS = 600;
+  bool     busyWorks       = false;
+  uint32_t busyLastLowMs   = 0;
+
+  void playCurrent() {
+    // ALBUMS[] is 0-based, SD card folders are 1-based (01, 02, ...).
+    dfplayer.playFolder(curPlaylist + 1, curTrack);
+    playing       = true;
+    lastPlayCmdMs = millis();
+  }
 
   uint8_t trackCountCache[UI_MAX_PLAYLISTS] = { 0 };
   bool    trackCountKnown[UI_MAX_PLAYLISTS] = { false };
@@ -26,6 +56,8 @@ void init() {
   // RX: 1/13/17/29), so the DFPlayer goes on Serial1. Serial2 is UART1 and
   // cannot reach these pins - the core panic()s on an illegal pin, halting
   // the chip before USB enumerates. Must be called before begin().
+  pinMode(DFPLAYER_BUSY_PIN, INPUT_PULLUP);
+
   Serial1.setTX(DFPLAYER_TX_PIN);
   Serial1.setRX(DFPLAYER_RX_PIN);
   Serial1.begin(9600);
@@ -63,10 +95,7 @@ void playPlaylist(uint8_t playlist, uint8_t track) {
   curPlaylist = playlist;
   curTrack    = track;
 
-  // ALBUMS[] is 0-based, SD card folders are 1-based (01, 02, ...).
-  uint8_t folder = playlist + 1;
-  dfplayer.playFolder(folder, curTrack);
-  playing = true;
+  playCurrent();
 }
 
 void next() {
@@ -76,14 +105,12 @@ void next() {
   const uint8_t listed = TrackNames::trackCount(curPlaylist);
   if (listed && curTrack >= listed) curTrack = 1;
   else if (curTrack < 255)          curTrack++;
-  dfplayer.playFolder(curPlaylist + 1, curTrack);
-  playing = true;
+  playCurrent();
 }
 
 void previous() {
   if (curTrack > 1) curTrack--;
-  dfplayer.playFolder(curPlaylist + 1, curTrack);
-  playing = true;
+  playCurrent();
 }
 
 void togglePlayPause() {
@@ -92,7 +119,8 @@ void togglePlayPause() {
     playing = false;
   } else {
     dfplayer.start();
-    playing = true;
+    playing       = true;
+    lastPlayCmdMs = millis();
   }
 }
 
@@ -133,6 +161,58 @@ uint8_t trackCount(uint8_t playlist) {
   trackCountCache[playlist] = result;
   trackCountKnown[playlist] = true;
   return result;
+}
+
+bool serviceAutoplay(uint32_t nowMs) {
+  bool finished = false;
+
+  // Source 1, the serial "finished" message. available() only reads what is
+  // already in the UART buffer, it never waits, so this is cheap to call
+  // every loop. Messages other than "finished" (card inserted/removed/online,
+  // errors) are only logged on Serial for debugging, then dropped; they change
+  // nothing. readType() consumes the message, so it is called exactly once per
+  // available() and the type is handled with a switch, not compared once.
+  // For DFPlayerError, read() is the module's error code (the library's
+  // Busy / FileMismatch / ... numbers), printed as a plain number.
+  if (dfplayer.available()) {
+    switch (dfplayer.readType()) {
+      case DFPlayerPlayFinished:
+        finished = true;
+        break;
+      case DFPlayerError:
+        Serial.printf("DFPlayer error %u\n", (unsigned)dfplayer.read());
+        break;
+      case DFPlayerCardRemoved:
+        Serial.println("DFPlayer: SD card removed");
+        break;
+      case DFPlayerCardInserted:
+        Serial.println("DFPlayer: SD card inserted");
+        break;
+      case DFPlayerCardOnline:
+        Serial.println("DFPlayer: SD card online");
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Source 2, the BUSY pin (see busyWorks above).
+  if (digitalRead(DFPLAYER_BUSY_PIN) == LOW) {
+    busyWorks     = true;
+    busyLastLowMs = nowMs;
+  } else if (busyWorks && nowMs - busyLastLowMs >= BUSY_IDLE_MS) {
+    finished = true;
+  }
+
+  if (!finished) return false;
+  // Paused: BUSY is HIGH and a stray finish must not start the next song.
+  if (!playing) return false;
+  // Right after a play command: BUSY has not gone LOW yet, or this is the
+  // duplicate / echo "finished" (see FINISH_GUARD_MS above).
+  if (nowMs - lastPlayCmdMs < FINISH_GUARD_MS) return false;
+
+  next();
+  return true;
 }
 
 } // namespace AudioPlayer
