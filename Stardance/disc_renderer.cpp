@@ -1,3 +1,8 @@
+// Hot per-pixel loop (renderBand runs every spin frame, full screen): built
+// with -O2 whatever the IDE's "Optimize" menu says, same reasoning as
+// mini_record.cpp / backdrop.cpp / ui_draw.cpp.
+#pragma GCC optimize("O2")
+
 #include "disc_renderer.h"
 #include "album_store.h"
 #include "config.h"
@@ -16,10 +21,11 @@ namespace {
 
   constexpr float REPLAY_DURATION_MS = 350.0f;
 
-  // Album art fills the whole disc, edge to edge — no vinyl plate, no
-  // grooves, no outer ring. build_albums.py already center-crops each
-  // cover to a square and masks it to a circle of radius DISC_R, so the
-  // art's own edge *is* the disc's edge.
+  // Album art fills the whole disc, edge to edge — build_albums.py already
+  // center-crops each cover to a square and masks it to a circle of radius
+  // DISC_R, so the art's own edge *is* the disc's edge. With DISC_GROOVES a
+  // faint vinyl sheen (grooves + a fixed glare) is blended over the art; see
+  // below. No vinyl plate or outer ring either way — those stay rejected.
   //
   // The slight overscan (>1.0) shrinks the sampled source radius a couple
   // of pixels inside that mask. Without it, the outermost ring of screen
@@ -47,6 +53,58 @@ namespace {
     const float xm1 = x - 1.0f;
     return 1.0f + c3 * xm1 * xm1 * xm1 + c1 * xm1 * xm1;
   }
+
+  // ---- Vinyl sheen: the chooser's groove gradient (mini_record.cpp),
+  // computed here at the big disc's own radius. Deliberately screen-space
+  // (dx, dy from the disc's screen centre, not the rotated source position):
+  // grooves are concentric rings around the spindle, so a rotation doesn't
+  // change them, which means this doesn't need the rotation matrix either,
+  // just the pixel's screen position the loop already has.
+  //
+  // The mock's glare wedges are NOT included here. They cost a per-pixel
+  // angle (a division) over a wide swath of the disc, which is cheap on a
+  // mini record only because grooveRun() there is already called on a thin,
+  // pre-clipped ring; on the full disc it measured ~13 ms/frame extra on an
+  // emulated M0+ (vs ~9 ms for the grooves alone), on top of an already
+  // ~40 ms push. Revisit if that still feels worth it once this is actually
+  // on hardware.
+#if DISC_GROOVES
+  constexpr float D_GROOVE_PERIOD = 1.8f * 1.875f;   // same physical pitch as the mini records
+  constexpr float D_GROOVE_START  = 1.1f * 1.875f;
+  constexpr float D_GROOVE_PEAK   = 1.4f * 1.875f;
+  constexpr float D_GROOVE_A      = 0.07f;
+
+  constexpr int D_GROOVE_STEP = 4;   // px^2 per LUT step (d2 is plain px^2 here, no
+                                      // Q16 — the disc never scales, unlike a record)
+  constexpr int D_GROOVE_SIZE = (int)((DISC_R + 2) * (DISC_R + 2) / D_GROOVE_STEP) + 2;
+  uint8_t dGrooveLut[D_GROOVE_SIZE];   // alpha by d2, x2048 (so .07 = 143)
+
+  float dGrooveAt(float r) {
+    const float p = fmodf(r, D_GROOVE_PERIOD);
+    if (p < D_GROOVE_START) return 0.0f;
+    if (p < D_GROOVE_PEAK)  return D_GROOVE_A * (p - D_GROOVE_START) / (D_GROOVE_PEAK - D_GROOVE_START);
+    return D_GROOVE_A * (D_GROOVE_PERIOD - p) / (D_GROOVE_PERIOD - D_GROOVE_PEAK);
+  }
+
+  // RGB565 in "lanes" (as in mini_record.cpp / backdrop.cpp): one multiply
+  // blends all three channels toward white.
+  constexpr uint32_t D_LANES = 0x07E0F81Fu;
+  inline uint32_t dSpread(uint16_t c) { return (c | ((uint32_t)c << 16)) & D_LANES; }
+  inline uint16_t dFold(uint32_t v)   { v &= D_LANES; return (uint16_t)(v | (v >> 16)); }
+  inline uint16_t dBlendWhite(uint16_t bg, uint32_t a5 /*0..32*/) {
+    const uint32_t b = dSpread(bg);
+    return dFold(b + (((D_LANES - b) * a5) >> 5));
+  }
+
+  void initSheen() {
+    for (int i = 0; i < D_GROOVE_SIZE; i++) {
+      const float r = sqrtf((float)(D_GROOVE_STEP * i + D_GROOVE_STEP / 2));
+      float s = 0.0f;
+      for (int k = 0; k < 16; k++) s += dGrooveAt(r - 0.5f + (k + 0.5f) / 16.0f);
+      dGrooveLut[i] = (uint8_t)lroundf(s / 16.0f * 2048.0f);
+    }
+  }
+#endif
 }
 
 void init() {
@@ -62,6 +120,10 @@ void init() {
   lastTickMs = 0;
   replaying  = false;
   replayPending = false;
+
+#if DISC_GROOVES
+  initSheen();
+#endif
 }
 
 void setAngle(float radians) {
@@ -170,12 +232,30 @@ void renderBand(uint16_t *out, uint8_t bandIndex) {
     int32_t sx = ((int32_t)DISC_CX << 16) + dxStart * ca - dy * sa;
     int32_t sy = ((int32_t)DISC_CY << 16) + dxStart * sa + dy * ca;
 
+#if DISC_GROOVES
+    // This row's incremental d2 = dx^2 + dy^2 (screen space, plain px^2),
+    // updated a step at a time instead of squaring dx every pixel.
+    int32_t d2     = dxStart * dxStart + dy * dy;
+    int32_t twodx1 = 2 * dxStart + 1;
+#endif
+
     // Every pixel between xs and xe is inside the circle, so it is album
     // art — no per-pixel radius test needed any more.
     for (int x = xs; x <= xe; x++) {
       const int srcX = sx >> 16;
       const int srcY = sy >> 16;
-      row[x] = srcPal[srcPixels[srcY * ART_W + srcX]];
+      const uint16_t px = srcPal[srcPixels[srcY * ART_W + srcX]];
+
+#if DISC_GROOVES
+      uint32_t gi = (uint32_t)d2 >> 2;   // /D_GROOVE_STEP
+      if (gi >= (uint32_t)D_GROOVE_SIZE) gi = D_GROOVE_SIZE - 1;
+      const int w = dGrooveLut[gi] * 2;                                // Q12 white
+      row[x] = w ? dBlendWhite(px, (uint32_t)w >> 7) : px;
+      d2 += twodx1;
+      twodx1 += 2;
+#else
+      row[x] = px;
+#endif
 
       sx += ca;
       sy += sa;
