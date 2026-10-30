@@ -7,7 +7,7 @@
 // Data only. There is deliberately NO drawing / UI here and nothing in this
 // module pauses the music or changes any view: the on-screen indicator (and
 // what to do when the battery is low) is left for the user to decide later.
-// Stardance.ino only prints one Serial line every 10 s,
+// firmware.ino only prints one Serial line every 10 s,
 //   battery 3.87 V 63 %
 // from loop() (never from a draw path). isLow() is there for that later UI.
 //

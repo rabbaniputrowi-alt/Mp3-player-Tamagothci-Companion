@@ -23,7 +23,7 @@ firmware.
 
 Usage (from this folder, --out is the flat sketch folder):
   pip install pillow fonttools brotli
-  python build_ui_fonts.py --out ../../Stardance
+  python build_ui_fonts.py --out ../../firmware
 """
 
 import argparse
@@ -109,7 +109,7 @@ def c_bytes(data, per_line=20):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--out", required=True, help="sketch folder (flat), e.g. ../../Stardance")
+    ap.add_argument("--out", required=True, help="sketch folder (flat), e.g. ../../firmware")
     args = ap.parse_args()
     out = Path(args.out)
 

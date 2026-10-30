@@ -8,7 +8,7 @@ namespace AudioPlayer {
 namespace {
   DFRobotDFPlayerMini dfplayer;
 
-  // 0-30 range for this module (30 = max). Half scale, not max: Stardance.ino
+  // 0-30 range for this module (30 = max). Half scale, not max: firmware.ino
   // auto-plays folder 01 track 1 at boot straight into the earbuds, and full
   // volume is painfully loud there. There is no volume control on the
   // buttons yet (all four are allocated), so this is the level it stays at.
