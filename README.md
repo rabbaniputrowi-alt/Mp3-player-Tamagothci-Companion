@@ -1,16 +1,11 @@
-# Stardance
+# MP3 Player + Tamagotchi Companion
+A MP3 Player that lives under a star-shaped casing and displays a spinning album of the track playing! whilst also a Tamagotchi pet that lives in a round screen and reacts to button interactions, tilt, or even when you shake it.
 
-A star-shaped, Y2K-style handheld that is two things at once: an MP3 player with a spinning album-art disc, and a Tamagotchi-style pet that lives on a round screen and reacts when you tilt or shake it.
+## Why I built it?
+Music is everything to me, it helps me focus and soothes my mind, however my school confiscated our phones making it hard for me to focus in school. Therefore i took it upon myself to create and design my very own mp3 player. Inspired by Lil guy from starboy, I then created my own version of a Tamagotchi pet that uses the faces of bees in a roblox game called Bee Swarm Simulator as the Tamagotchi pet. 
 
-No photo or render is committed yet. See "Hardware files" and "Known limitations" below for what exists and what does not.
-
-## Why I built it
-
-<!-- DRAFT: rewrite in your own words before publishing -->
-I wanted a small Y2K star, something like a keychain, that plays my music and also has a pet living on its screen. I could not buy that, so I designed the hardware and wrote the firmware myself. I work in small steps and test each one on the device before moving on. This build is funded and capped at $120 in parts.
 
 ## Features
-
 - Plays MP3s from a microSD card, organised as playlists (one folder per album)
 - Album cover rendered as a spinning disc, full screen, with spin-up and spin-down easing
 - Playlist and track chooser over a blurred backdrop of the album art
@@ -159,20 +154,6 @@ The device boots into the pet view.
 
 The carrier PCB (version 2) is a 2-layer, 1.2 mm board that holds the RP2040-Zero, DFPlayer, MPU6050, buttons, jack and the charging circuit, with the battery underneath. The case is 3D printed and closes with four M2 screws into heat-set inserts. Neither the board nor the case source is in the repo yet (see "Hardware files").
 
-## Status
-
-- [x] Music player firmware (disc view, chooser, backdrop)
-- [x] Pet firmware (animations, tilt, shake, penguin)
-- [x] Both merged into one sketch
-- [x] Parts list with prices (BOM.csv)
-- [ ] Merged build flash-tested on the final PCB
-- [ ] Carrier PCB v2 fabricated and assembled
-- [ ] Case updated for PCB v2, printed and fitted
-- [ ] KiCad project committed in `PCB/`
-- [ ] Case CAD committed in `CAD/`
-- [ ] Real photo or render added to this README
-- [ ] Battery life measured
-- [ ] License chosen
 
 The remaining steps are tracked in [docs/SHIPPING_CHECKLIST.md](docs/SHIPPING_CHECKLIST.md).
 
@@ -197,9 +178,3 @@ The remaining steps are tracked in [docs/SHIPPING_CHECKLIST.md](docs/SHIPPING_CH
 - Lora and DM Sans fonts, SIL Open Font License (license texts in `tools/UI_Fonts/fonts/`: [OFL-Lora.txt](tools/UI_Fonts/fonts/OFL-Lora.txt), [OFL-DMSans.txt](tools/UI_Fonts/fonts/OFL-DMSans.txt))
 - The pet animations are my own clips. The dancing penguin is a Block Tales fan gif, credited here as that and to be replaced before redistribution.
 - Album covers: third-party artwork, placeholders (see Known limitations).
-
-## License
-
-TODO: License not chosen yet.
-
-<!-- e.g. MIT for code, CERN-OHL-P for hardware -->
