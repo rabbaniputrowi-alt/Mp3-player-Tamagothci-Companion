@@ -200,21 +200,6 @@ The carrier PCB (version 2) is a 2-layer, 1.2 mm board that holds the RP2040-Zer
 
 ![Case v4 battery pod and bail lug](docs/images/case_battery_pod.png)
 
-The remaining steps are tracked in [docs/SHIPPING_CHECKLIST.md](docs/SHIPPING_CHECKLIST.md).
-
-### Known limitations / not done yet
-
-- The merged firmware has not been flash-tested as one build on the final PCB.
-- PCB v2 has not been fabricated yet.
-- The case has not been updated for PCB v2 (button and USB-C positions, M2 inserts).
-- There are no volume buttons. The default volume is set to 15 of 30.
-- There is no on-screen battery indicator. The battery is read on GP26 and logged to Serial.
-- Debug prints are off by default.
-- The left/right tilt sign of the pet's face is unconfirmed on hardware (up/down is confirmed).
-- `User_Setup.h` for TFT_eSPI has to be edited by hand (see docs/User_Setup.example.h).
-- The album covers in `tools/Spinning Disc/covers/` and the Tutorial Terry gif are third-party artwork. They are placeholders. Replace them with your own or properly licensed art before redistributing this repo. The music is not in the repo.
-- The BOM is approximate: four lines are unpriced and some prices are substitutes (see docs/BOM_NOTES.md).
-
 ## Credits
 
 - [TFT_eSPI](https://github.com/Bodmer/TFT_eSPI) by Bodmer
