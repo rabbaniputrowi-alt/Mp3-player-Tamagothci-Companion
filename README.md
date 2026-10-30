@@ -4,6 +4,19 @@ A MP3 Player that lives under a star-shaped casing and displays a spinning album
 ## Why I built it?
 Music is everything to me, it helps me focus and soothes my mind, however my school confiscated our phones making it hard for me to focus in school. Therefore i took it upon myself to create and design my very own mp3 player. Inspired by Lil guy from starboy, I then created my own version of a Tamagotchi pet that uses the faces of bees in a roblox game called Bee Swarm Simulator as the Tamagotchi pet. 
 
+![Stardance case v4: front, top, bottom and inside the back half](docs/images/case_overview.png)
+
+
+## Inspired by
+
+- **Bee Swarm Simulator (Gifted bees).** The pet's faces are the bees from this Roblox game, and the gifted star is where the star shape comes from.
+- **The Lil Guy from Starboy.** A small star-shaped companion you hold in your hand, which is what I wanted to build for real.
+
+| Bee Swarm Simulator, gifted stars | Starboy Lil Guy |
+|---|---|
+| ![Gifted stars in Bee Swarm Simulator](docs/images/inspo_bss_gifted.png) | ![Starboy Lil Guy held in a hand](docs/images/inspo_starboy_lil_guy.png) |
+
+Both images are third-party material, used here only to show the inspiration. They belong to their respective owners.
 
 ## Features
 - Plays MP3s from a microSD card, organised as playlists (one folder per album)
@@ -15,6 +28,12 @@ Music is everything to me, it helps me focus and soothes my mind, however my sch
 - Autoplay: the next track starts by itself when one ends
 - 3.5 mm headphone output
 - USB-C charging for a 1200 mAh LiPo (on the PCB design)
+
+### The pet
+
+| Blink | Wink | Tilt follow | Shake to dizzy |
+|---|---|---|---|
+| ![blink](tools/previews/blink.gif) | ![wink](tools/previews/wink.gif) | ![tilt follow](tools/previews/tilt_follow.gif) | ![shake to dizzy](tools/previews/shake_to_dizzy.gif) |
 
 ## Hardware
 
@@ -59,12 +78,12 @@ On the PCB design the DFPlayer VCC is on VSYS. The old breadboard used the 3.3 V
 
 ## Hardware files
 
-The KiCad project and the case CAD are not committed yet. When they are added, they go in these folders:
+Only the finished design files are kept in the repo:
 
-- `PCB/` for the KiCad carrier board, footprints and fabrication exports
-- `CAD/` for the case source files, exports and renders
+- `PCB/stardance_pcb.kicad_pcb` is the carrier board. Open it directly in the KiCad PCB editor.
+- `CAD/` has case v4 as STEP files: `stardance_case_v4.step` (the whole case), `stardance_v4_front_shell.step` and `stardance_v4_back_shell.step`. Export STL from these for printing.
 
-Until then there is no schematic image, PCB image or case render in this repo.
+Previews of both are in "PCB and case" below. The generator scripts, schematics and older revisions are not included.
 
 ## Repository layout
 
@@ -75,13 +94,13 @@ tools/
   Pet_Pipeline/     pet animation generator and previewer
   UI_Fonts/         chooser font generator and the font files
   previews/         pet preview gifs and contact sheets
-docs/               BOM notes, merge plan, TFT_eSPI setup example, shipping checklist
+docs/               BOM notes, merge plan, TFT_eSPI setup example, shipping checklist, images/ for the README
+PCB/                carrier board (.kicad_pcb)
+CAD/                case v4 STEP files
 Archive/            old code, kept for reference only
 BOM.csv             bill of materials
 wiring.md           wiring reference (breadboard and PCB)
 ```
-
-Not in the repo yet: `PCB/` and `CAD/` (see "Hardware files").
 
 ## Building the firmware
 
@@ -152,8 +171,21 @@ The device boots into the pet view.
 
 ## PCB and case
 
-The carrier PCB (version 2) is a 2-layer, 1.2 mm board that holds the RP2040-Zero, DFPlayer, MPU6050, buttons, jack and the charging circuit, with the battery underneath. The case is 3D printed and closes with four M2 screws into heat-set inserts. Neither the board nor the case source is in the repo yet (see "Hardware files").
+The carrier PCB (version 2) is a 2-layer, 1.2 mm board that holds the RP2040-Zero, DFPlayer, MPU6050, buttons, jack and the charging circuit, with the battery underneath. The case is 3D printed and closes with four M2 screws into heat-set inserts. The board is `PCB/stardance_pcb.kicad_pcb` and the case v4 files are in `CAD/` (see "Hardware files").
 
+### PCB
+
+| Front | Back |
+|---|---|
+| ![PCB v2 front](docs/images/pcb_front.png) | ![PCB v2 back](docs/images/pcb_back.png) |
+
+![PCB v2 placement and routing check, dimensions in mm](docs/images/pcb_fit_check.png)
+
+### Case
+
+![Case v4 side buttons and caps](docs/images/case_buttons.png)
+
+![Case v4 battery pod and bail lug](docs/images/case_battery_pod.png)
 
 The remaining steps are tracked in [docs/SHIPPING_CHECKLIST.md](docs/SHIPPING_CHECKLIST.md).
 

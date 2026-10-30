@@ -3,3 +3,6 @@ __pycache__/
 *.bak
 .DS_Store
 Thumbs.db
+
+# local leftovers moved out of the repo (safe to delete)
+_removed_from_repo/
