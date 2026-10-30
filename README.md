@@ -4,7 +4,7 @@ A MP3 Player that lives under a star-shaped casing and displays a spinning album
 ## Why I built it?
 Music is everything to me, it helps me focus and soothes my mind, however my school confiscated our phones making it hard for me to focus in school. Therefore i took it upon myself to create and design my very own mp3 player. Inspired by Lil guy from starboy, I then created my own version of a Tamagotchi pet that uses the faces of bees in a roblox game called Bee Swarm Simulator as the Tamagotchi pet. 
 
-![Stardance case v4: front, top, bottom and inside the back half](docs/images/case_overview.png)
+![Stardance case: the spinning album on the screen (left) and the pet face (right)](docs/images/case_with_face.png)
 
 
 ## Inspired by
@@ -20,11 +20,11 @@ Both images are third-party material, used here only to show the inspiration. Th
 
 ## Characters used in this project
 
-The pet's faces are bees from Bee Swarm Simulator, and each one is used for a different reaction. The dancing penguin is the odd one out and comes from Block Tales.
+The pet's faces are bees from Bee Swarm Simulator, and each one is used for a different reaction. Tutorial Terry, the dancing penguin, is the odd one out and comes from BloxTales.
 
 <table>
 <tr><td align="center"><img src="docs/images/char_rest.png" width="170" alt="Rest face"><br>Rest face: blink and look around</td><td align="center"><img src="docs/images/char_affection.png" width="170" alt="Affection face"><br>Affection wink (NEXT)</td><td align="center"><img src="docs/images/char_bubble.png" width="170" alt="Bubble face"><br>Bubble face, a rare idle</td></tr>
-<tr><td align="center"><img src="docs/images/char_music.png" width="170" alt="Music face"><br>Music spin (MENU transition)</td><td align="center"><img src="docs/images/char_dizzy.png" width="170" alt="Dizzy face"><br>Scared and dizzy when shaken</td><td align="center"><img src="docs/images/char_penguin.png" width="170" alt="Dancing penguin"><br>Dancing penguin (PLAY)</td></tr>
+<tr><td align="center"><img src="docs/images/char_music.png" width="170" alt="Music face"><br>Music spin (MENU transition)</td><td align="center"><img src="docs/images/char_dizzy.png" width="170" alt="Dizzy face"><br>Scared and dizzy when shaken</td><td align="center"><img src="docs/images/char_penguin.png" width="170" alt="Tutorial Terry"><br>Tutorial Terry (BloxTales), PLAY</td></tr>
 </table>
 
 These are third-party characters, shown only to document what the animations are based on. They belong to their respective owners.
@@ -35,7 +35,7 @@ These are third-party characters, shown only to document what the animations are
 - Playlist and track chooser over a blurred backdrop of the album art
 - Animated pet with idle clips, interactive clips and a "face on a ball" view that follows the tilt of the device
 - Shake it and the pet gets dizzy
-- A dancing penguin mode (press PLAY in the pet view)
+- A Tutorial Terry (BloxTales) dance mode (press PLAY in the pet view)
 - Autoplay: the next track starts by itself when one ends
 - 3.5 mm headphone output
 - USB-C charging for a 1200 mAh LiPo (on the PCB design)
@@ -171,7 +171,7 @@ Each view owns PREV, PLAY and NEXT. In the pet view the music is not touched.
 | Button | Disc view | Pet view |
 |---|---|---|
 | PREV | previous track | pet winks |
-| PLAY | play/pause | starts or stops the penguin dance |
+| PLAY | play/pause | starts or stops the Tutorial Terry dance |
 | NEXT | next track | affection wink |
 | MENU (short) | open the playlist chooser | open the playlist chooser |
 | MENU (hold) | switch to pet view | switch to disc view |
@@ -194,6 +194,8 @@ The carrier PCB (version 2) is a 2-layer, 1.2 mm board that holds the RP2040-Zer
 
 ### Case
 
+![Case v4: front, top, bottom and inside the back half](docs/images/case_overview.png)
+
 ![Case v4 side buttons and caps](docs/images/case_buttons.png)
 
 ![Case v4 battery pod and bail lug](docs/images/case_battery_pod.png)
@@ -210,7 +212,7 @@ The remaining steps are tracked in [docs/SHIPPING_CHECKLIST.md](docs/SHIPPING_CH
 - Debug prints are off by default.
 - The left/right tilt sign of the pet's face is unconfirmed on hardware (up/down is confirmed).
 - `User_Setup.h` for TFT_eSPI has to be edited by hand (see docs/User_Setup.example.h).
-- The album covers in `tools/Spinning Disc/covers/` and the penguin gif are third-party artwork. They are placeholders. Replace them with your own or properly licensed art before redistributing this repo. The music is not in the repo.
+- The album covers in `tools/Spinning Disc/covers/` and the Tutorial Terry gif are third-party artwork. They are placeholders. Replace them with your own or properly licensed art before redistributing this repo. The music is not in the repo.
 - The BOM is approximate: four lines are unpriced and some prices are substitutes (see docs/BOM_NOTES.md).
 
 ## Credits
@@ -219,5 +221,5 @@ The remaining steps are tracked in [docs/SHIPPING_CHECKLIST.md](docs/SHIPPING_CH
 - [DFRobotDFPlayerMini](https://github.com/DFRobot/DFRobotDFPlayerMini) by DFRobot
 - [arduino-pico](https://github.com/earlephilhower/arduino-pico) by Earle Philhower
 - Lora and DM Sans fonts, SIL Open Font License (license texts in `tools/UI_Fonts/fonts/`: [OFL-Lora.txt](tools/UI_Fonts/fonts/OFL-Lora.txt), [OFL-DMSans.txt](tools/UI_Fonts/fonts/OFL-DMSans.txt))
-- The pet animations are my own clips. The dancing penguin is a Block Tales fan gif, credited here as that and to be replaced before redistribution.
+- The pet animations are my own clips. Tutorial Terry, the dancing penguin, is a BloxTales character, credited here as that and to be replaced before redistribution.
 - Album covers: third-party artwork, placeholders (see Known limitations).
