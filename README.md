@@ -18,6 +18,17 @@ Music is everything to me, it helps me focus and soothes my mind, however my sch
 
 Both images are third-party material, used here only to show the inspiration. They belong to their respective owners.
 
+## Characters used in this project
+
+The pet's faces are bees from Bee Swarm Simulator, and each one is used for a different reaction. The dancing penguin is the odd one out and comes from Block Tales.
+
+<table>
+<tr><td align="center"><img src="docs/images/char_rest.png" width="170" alt="Rest face"><br>Rest face: blink and look around</td><td align="center"><img src="docs/images/char_affection.png" width="170" alt="Affection face"><br>Affection wink (NEXT)</td><td align="center"><img src="docs/images/char_bubble.png" width="170" alt="Bubble face"><br>Bubble face, a rare idle</td></tr>
+<tr><td align="center"><img src="docs/images/char_music.png" width="170" alt="Music face"><br>Music spin (MENU transition)</td><td align="center"><img src="docs/images/char_dizzy.png" width="170" alt="Dizzy face"><br>Scared and dizzy when shaken</td><td align="center"><img src="docs/images/char_penguin.png" width="170" alt="Dancing penguin"><br>Dancing penguin (PLAY)</td></tr>
+</table>
+
+These are third-party characters, shown only to document what the animations are based on. They belong to their respective owners.
+
 ## Features
 - Plays MP3s from a microSD card, organised as playlists (one folder per album)
 - Album cover rendered as a spinning disc, full screen, with spin-up and spin-down easing
@@ -80,22 +91,22 @@ On the PCB design the DFPlayer VCC is on VSYS. The old breadboard used the 3.3 V
 
 Only the finished design files are kept in the repo:
 
-- `PCB/stardance_pcb.kicad_pcb` is the carrier board. Open it directly in the KiCad PCB editor.
+- `PCB/` is the KiCad project for the carrier board: `stardance_pcb.kicad_pro` (open this), `stardance_pcb.kicad_sch` (schematic) and `stardance_pcb.kicad_pcb` (board).
 - `CAD/` has case v4 as STEP files: `stardance_case_v4.step` (the whole case), `stardance_v4_front_shell.step` and `stardance_v4_back_shell.step`. Export STL from these for printing.
 
-Previews of both are in "PCB and case" below. The generator scripts, schematics and older revisions are not included.
+Previews of both are in "PCB and case" below. The generator scripts, PDFs, custom libraries and older revisions are not included.
 
 ## Repository layout
 
 ```
-Stardance/          the firmware sketch (Stardance.ino and all .cpp/.h files, flat)
+firmware/          the firmware sketch (firmware.ino and all .cpp/.h files, flat)
 tools/
   Spinning Disc/    album art and track name generators
   Pet_Pipeline/     pet animation generator and previewer
   UI_Fonts/         chooser font generator and the font files
   previews/         pet preview gifs and contact sheets
 docs/               BOM notes, merge plan, TFT_eSPI setup example, shipping checklist, images/ for the README
-PCB/                carrier board (.kicad_pcb)
+PCB/                KiCad project (.kicad_pro, .kicad_sch, .kicad_pcb)
 CAD/                case v4 STEP files
 Archive/            old code, kept for reference only
 BOM.csv             bill of materials
@@ -121,7 +132,7 @@ Tested with arduino-pico 6.3.1.
    #define TFT_DC   7
    #define TFT_RST  8
    ```
-5. Open `Stardance/Stardance.ino` and upload.
+5. Open `firmware/firmware.ino` and upload.
 
 If a change to `User_Setup.h` does not seem to take effect, delete the cached build in `AppData\Local\arduino\sketches\` and compile again.
 
@@ -142,7 +153,7 @@ Folders `01` to `99`, files `001.mp3` to `255.mp3`, no extra text in either name
 
 ## Adding an album
 
-Run the generators from the folder that holds their json, with `--out` pointing at the `Stardance` sketch folder.
+Run the generators from the folder that holds their json, with `--out` pointing at the `firmware` sketch folder.
 
 1. Add the cover image and an entry in `albums.json`, then run
    `python build_albums.py --manifest albums.json --out <sketch>`
@@ -171,7 +182,7 @@ The device boots into the pet view.
 
 ## PCB and case
 
-The carrier PCB (version 2) is a 2-layer, 1.2 mm board that holds the RP2040-Zero, DFPlayer, MPU6050, buttons, jack and the charging circuit, with the battery underneath. The case is 3D printed and closes with four M2 screws into heat-set inserts. The board is `PCB/stardance_pcb.kicad_pcb` and the case v4 files are in `CAD/` (see "Hardware files").
+The carrier PCB (version 2) is a 2-layer, 1.2 mm board that holds the RP2040-Zero, DFPlayer, MPU6050, buttons, jack and the charging circuit, with the battery underneath. The case is 3D printed and closes with four M2 screws into heat-set inserts. The KiCad project is in `PCB/` and the case v4 files are in `CAD/` (see "Hardware files").
 
 ### PCB
 

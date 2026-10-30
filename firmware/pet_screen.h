@@ -1,7 +1,7 @@
 // pet_screen.h -- the pet view: motion sampling, ball easing and drawing.
 //
 // What used to be Pet_Test.ino, minus setup(), loop(), the buttons and the
-// MENU test stepping. Stardance.ino owns the buttons and calls Pet::trigger()
+// MENU test stepping. firmware.ino owns the buttons and calls Pet::trigger()
 // itself; this module only keeps the pet alive and on screen.
 //
 // Idle:  pet rests, then plays BLINK, LOOKAROUND or (rarely) BUBBLE_FACE.
