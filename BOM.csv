@@ -1,36 +1,38 @@
-Ref,Part,Value/Package,Qty per unit,Unit price USD,Line total USD,Source,URL,Notes
-U1,Waveshare RP2040-Zero,"RP2040 castellated module, no header",1,3.99,3.9900,Waveshare,https://www.waveshare.com/rp2040-zero.htm,Page lists $3.99 to $4.99 depending on pre-soldered header; $3.99 assumed to be the no-header (castellated) version.
-U2,DFPlayer Mini MP3 module (genuine DFRobot SKU DFR0299),"16-pin module, microSD slot",1,5.90,5.9000,DFRobot,https://www.dfrobot.com/product-1121.html,Genuine DFRobot price used as verified USD; the clone you plan to use was not price-verified in USD (likely cheaper).
-U2-SD,"microSD card, small capacity",8 GB microSD,1,14.00,14.0000,RobotShop,https://www.robotshop.com/products/8-gb-microsd-card,Listed price includes US tariffs per page. Any cheap 2-8 GB card works; local Tokopedia/Shopee price not verified.
-U3,GY-521 MPU6050 breakout (SUBSTITUTE PRICE: DFRobot SEN0142 MPU-6050 breakout),MPU-6050 6-DOF breakout,1,12.90,12.9000,DFRobot,https://www.dfrobot.com/product-880.html,PLACEHOLDER UPPER BOUND. This is not the GY-521 board; no in-stock GY-521 price in USD from a reputable source was found. GY-521 seen only at EUR 3.41 (sold out) on openelab.io.
-DISP1,GC9A01 1.28in round 240x240 SPI TFT module,"7-pin, no backlight pin",1,7.95,7.9500,ProtoSupplies,https://protosupplies.com/?p=15523,"Page lists 7 pins (RES CS DC SDA SCL GND VCC), no BL pin. Matches the spec."
-J1,3.7 V LiPo 40x30x10 mm 1200 mAh (103040),"Pouch cell, bare leads",1,,,Not verified in USD,,UNVERIFIED. Only non-USD listing found: probots.co.in INR 269 incl GST (https://probots.co.in/3-7v-1200mah-lipo-battery-103040-open-ended.html). Price left empty.
-J3,XKB PJ-307N5 3.5 mm jack,"LCSC C692542, TH right angle",1,0.1937,0.1937,LCSC,https://www.lcsc.com/product-detail/C692542.html,LCSC page does not state pole count; confirm 3-conductor TRS and that footprint/pinout matches PJ-307 on carrier PCB v2.
-SW1-SW3,"Right-angle side-actuated tactile switch (PREV, NEXT, MENU)","6 mm TH right angle, SparkFun COM-10791",3,0.60,1.8000,SparkFun,https://www.sparkfun.com/products/10791,Price verified. Fit NOT verified: page gives no dimensions; confirm actuator height (~11.7 mm above PCB bottom) and SMD vs TH footprint against PCB.
-SW4,Tactile switch 6x6x5 mm SMD (PLAY),LCSC C83206 K2-6639SP-C4SC-04,1,0.0281,0.0281,LCSC,https://www.lcsc.com/product-detail/C83206.html,"Listed 6x6x5 mm; project notes say ~5.3 mm tall incl. actuator, confirm."
-SW5,SPDT slide switch MSK12C02 (POWER),"LCSC C431540, SMD right angle",1,0.0305,0.0305,LCSC,https://lcsc.com/product-detail/C431540.html,Page says SMD right angle 8x2.8 mm; confirm footprint and side actuation match SW5.
-J5,GCT USB4125-GF-A USB-C 6-pin receptacle,LCSC C3151650,1,0.5596,0.5596,LCSC,https://www.lcsc.com/product-detail/C3151650.html,Only 523 in stock at time of check.
-"R4,R5",Resistor 5.1k 1% (USB-C CC),"0603, LCSC C23186",2,0.0007,0.0014,LCSC,https://www.lcsc.com/product-detail/C23186.html,0603 size ASSUMED; confirm footprint size on PCB. Same for all passives below.
-"C4,C5",Capacitor 10uF 10V X5R,"0603, LCSC C19702",2,0.0132,0.0264,LCSC,https://www.lcsc.com/product-detail/C19702.html,Page shows two price structures (0.0132 vs 0.0065 at 50+); higher one used. Confirm 0603 vs 0805 and voltage on schematic.
-U4,TP4056 linear Li-ion charger,"ESOP-8, LCSC C16581 (TOP POWER ASIC TP4056-42-ESOP8)",1,0.0893,0.0893,LCSC,https://www.lcsc.com/product-detail/C16581.html,
-R6,Resistor 2k 1% (PROG),"0603, LCSC C22975",1,0.0013,0.0013,LCSC,https://www.lcsc.com/product-detail/C22975.html,"2k PROG gives roughly 580 mA charge current, about 0.5C for 1200 mAh."
-U5,DW01A battery protection,"SOT-23-6, LCSC C2927799 (YONGYUTAI)",1,0.026,0.0260,LCSC,https://www.lcsc.com/product-detail/C2927799.html,Price shown is the 20+ tier; single-piece price not shown.
-R7,Resistor 100R 1%,"0603, LCSC C22775",1,0.0012,0.0012,LCSC,https://www.lcsc.com/product-detail/C22775.html,
-C6,Capacitor 100nF 50V X7R,"0603, LCSC C1591",1,0.0038,0.0038,LCSC,https://www.lcsc.com/product-detail/C1591.html,LCSC page contradicts itself on stock and price; recheck before ordering.
-"R8, R-GP28",Resistor 1k 1% (R8 and DFPlayer RX series on GP28),"0603, LCSC C21190",2,0.0009,0.0018,LCSC,https://www.lcsc.com/product-detail/C21190.html,
-Q1,8205A dual N-MOSFET (equivalent to FS8205A),"TSSOP-8, LCSC C7499846 (HL 8205A)",1,0.0195,0.0195,LCSC,https://www.lcsc.com/product-detail/C7499846.html,"The LCSC FS8205A listing found (C908265) is SOT-23-6L, NOT TSSOP-8, so a TSSOP-8 8205A from another maker was used. Confirm it is acceptable."
-D1,SS14 Schottky diode (battery to VSYS),"SMA, LCSC C83852 (onsemi)",1,0.1234,0.1234,LCSC,https://www.lcsc.com/product-detail/C83852.html,Price shown is the 5+ tier.
-"R-DIV1,R-DIV2",Resistor 100k 1% (battery-sense divider to GP26),"0603, LCSC C25803",2,0.0016,0.0032,LCSC,https://www.lcsc.com/product-detail/C25803.html,Two 100k as specified; no second-resistor omission found.
-R-BUSY,Resistor 10k 1% (DFPlayer BUSY to GP27),"0603, LCSC C25804",1,0.0012,0.0012,LCSC,https://www.lcsc.com/product-detail/C25804.html,LCSC page metadata said out of stock when checked; pick another 10k 0603 if so. Required for autoplay.
-H1,"Pin header strip 1x40, 2.54 mm","TH, LCSC C2337",1,0.0857,0.0857,LCSC,https://www.lcsc.com/product-detail/C2337.html,"One strip cut to size covers about 31 pins (DFPlayer 2x8, MPU 1x8, display 1x7). RP2040-Zero uses castellated pads, no header."
-HW1,"M2 x 20 mm socket head cap screws, 304 SS, 55 pc set","Pack of 55, 4 used",1,10.09,10.0900,Walmart (Unique Bargains),https://www.walmart.com/ip/188277449,"Priced as one whole pack (4 needed). Marketplace seller, third-party; Walmart did not verify specs."
-HW2,"M2 heat-set insert, brass, double knurled","M2 x 5 x 3.5 mm, LCSC C51938897",4,0.0131,0.0524,LCSC,https://www.lcsc.com/product-detail/C51938897.html,Confirm insert OD/length against the case CAD.
-HW3,Split ring 22 mm inner diameter (keychain loop) - OPTIONAL,"22 mm ID, 4.4 mm wire",1,0.90,0.9000,PetHardware,https://www.pethardware.com/en/split-rings/metal-key-ring-charm-5108/index.md,Price excl. VAT; MINIMUM ORDER 10 pcs ($9.00 real outlay). Counted at 1 pc.
-"LED1,LED2",LED red 0603 (TP4056 CHRG and STDBY indicators),LCSC C2286 KT-0603R,2,0.0036,0.0072,LCSC,https://www.lcsc.com/product-detail/C2286.html,"ADDED BY BOM DRAFTER, confirm against schematic. TP4056 CHRG/STDBY pins are open-drain and need an LED each if status is wanted. Skip if the schematic omits them."
-"R-LED1,R-LED2",Resistor 1k 1% (LED current limit),"0603, LCSC C21190",2,0.0009,0.0018,LCSC,https://www.lcsc.com/product-detail/C21190.html,"ADDED BY BOM DRAFTER, confirm against schematic. "
-C7,Capacitor 10uF 10V X5R (VSYS bulk near DFPlayer),"0603, LCSC C19702",1,0.0132,0.0132,LCSC,https://www.lcsc.com/product-detail/C19702.html,"ADDED BY BOM DRAFTER, confirm against schematic. DFPlayer current spikes on VSYS; confirm a bulk cap is on the board. RP2040-Zero, GY-521 and display have their own onboard regulators/decoupling; GY-521 has onboard I2C pull-ups (value not checked), so no I2C pull-ups added. Buttons assumed to use RP2040 internal pull-ups."
-PCB,"Custom 2-layer 1.2 mm PCB, 83x83 mm: FAB SHARE (order cost / 5 boards)","JLCPCB, 5-board minimum",1,0.40,0.4000,JLCPCB,https://cart.jlcpcb.com/quote,Based on Hack Club's JLC guide: $2 for 5 two-layer boards under 100x100 mm (https://highway.hackclub.com/guides/JLC-cost-optimizing). $2 / 5 = $0.40. Quote page gave no live price; 1.2 mm thickness surcharge (if any) NOT verified.
-PCB-SHIP,PCB shipping share (shipping cost / 5 boards),,1,,,JLCPCB,,UNVERIFIED. Shipping depends on destination and weight; no rate could be read. Left empty.
-CASE,"3D printed case, filament only",,1,,,Not verified,,UNVERIFIED. Filament cost not looked up; left empty.
-SHIP,"Order shipping/import for LCSC, DFRobot, ProtoSupplies, RobotShop etc.",,1,,,Not verified,,UNVERIFIED. Shipping and import duties to Indonesia not looked up; left empty.
-TOTAL,"Total for ONE device, priced lines only",,,,59.20,,,UNDER the $120 cap (headroom 60.80). Unpriced lines: J1; PCB-SHIP; CASE; SHIP. Total excludes them.
+Ref,Part,Value/Package,Qty per device,Order qty,Unit price USD,Order cost USD,Status,Vendor,URL,Notes
+U1,Waveshare RP2040-Zero,castellated module,1,0,3.99,0.00,owned,Waveshare,https://www.waveshare.com/rp2040-zero.htm,From the breadboard prototype
+U2,DFPlayer Mini MP3 module,"16-pin module, microSD slot",1,0,5.90,0.00,owned,DFRobot,https://www.dfrobot.com/product-1121.html,Clone in use; price is the genuine DFR0299
+U3,GY-521 MPU6050 breakout,"21 x 16 mm, 8 pins",1,0,6.99,0.00,owned,ShillehTek,https://shillehtek.com/products/shillehtek-mpu-6050-module-gy-521-module-unsoldered-version,
+DISP1,GC9A01 1.28in round TFT module,"240x240 SPI, 7 pins, no backlight pin",1,0,7.95,0.00,owned,ProtoSupplies,https://protosupplies.com/?p=15523,"Wired to J4 pads; header removed, pins clipped"
+J1,LiPo 3.7 V 1200 mAh 103040,40 x 30 x 10 mm pouch,1,0,8.99,0.00,owned,eBay,https://www.ebay.com/itm/111861172398,Wired to J1 pads
+SD1,microSD card,8 GB (2-32 GB works),1,0,14.00,0.00,owned,RobotShop,https://www.robotshop.com/products/8-gb-microsd-card,
+J3,PJ-307 3.5 mm TRS jack,"XKB PJ-307N5, LCSC C692542",1,0,0.1937,0.00,owned,LCSC,https://www.lcsc.com/product-detail/C692542.html,"Sits in the board slot, wired to J3 pads"
+WIRE,Hookup wire,"28-30 AWG stranded, about 50 cm",1,0,0,0.00,owned,-,,"Display, battery and jack leads; from the breadboard kit"
+U4,TP4056 Li-ion charger,"ESOP-8, LCSC C16581",1,1,0.0893,0.09,buy,LCSC,https://www.lcsc.com/product-detail/C16581.html,
+U5,DW01A battery protection,"SOT-23-6, LCSC C2927799",1,1,0.026,0.03,buy,LCSC,https://www.lcsc.com/product-detail/C2927799.html,
+Q1,8205A dual N-MOSFET,"TSSOP-8, LCSC C7499846",1,1,0.0195,0.02,buy,LCSC,https://www.lcsc.com/product-detail/C7499846.html,TSSOP-8 version of FS8205A
+D1,SS14 Schottky diode,"SMA, LCSC C83852",1,1,0.1234,0.12,buy,LCSC,https://www.lcsc.com/product-detail/C83852.html,
+J5,USB-C receptacle 6P GCT USB4125-GF-A,LCSC C3151650,1,1,0.5596,0.56,buy,LCSC,https://www.lcsc.com/product-detail/C3151650.html,
+SW5,Slide switch C&K OS102011MA1QN1 (POWER),"SPDT right angle THT, LCSC C226259",1,1,0.5969,0.60,buy,LCSC,https://www.lcsc.com/product-detail/C226259.html,
+"R1,R8",Resistor 1k 1%,"0805, LCSC C17513",2,20,0.0019,0.04,buy,LCSC,https://www.lcsc.com/product-detail/C17513.html,
+"R2,R3",Resistor 100k 1%,"0805, LCSC C17407",2,20,0.0014,0.03,buy,LCSC,https://www.lcsc.com/product-detail/C17407.html,Battery sense divider
+"R4,R5",Resistor 5.1k 1%,"0805, LCSC C27834",2,20,0.0028,0.06,buy,LCSC,https://www.lcsc.com/product-detail/C27834.html,USB-C CC
+R6,Resistor 2k 1%,"0805, LCSC C17604",1,20,0.002,0.04,buy,LCSC,https://www.lcsc.com/product-detail/C17604.html,"TP4056 PROG, about 580 mA"
+R7,Resistor 100R 1%,"0805, LCSC C17408",1,20,0.0024,0.05,buy,LCSC,https://www.lcsc.com/product-detail/C17408.html,
+"C1,C2,C4,C5",Capacitor 10uF 25V X5R,"0805, LCSC C15850",4,20,0.0241,0.48,buy,LCSC,https://www.lcsc.com/product-detail/C15850.html,
+"C3,C6",Capacitor 100nF 50V X7R,"0805, LCSC C49678",2,20,0.0086,0.17,buy,LCSC,https://www.lcsc.com/product-detail/C49678.html,
+HDR,Pin header 1x40 2.54 mm,"THT, LCSC C2337",1,1,0.0857,0.09,buy,LCSC,https://www.lcsc.com/product-detail/C2337.html,Leads for DFPlayer and GY-521 if they come without pins
+HW2,"M2 heat-set insert, brass","M2 x 5 x 3.5 mm, LCSC C51938897",4,10,0.0131,0.13,buy,LCSC,https://www.lcsc.com/product-detail/C51938897.html,"Case bosses have 3.2 mm holes, 5.3 mm deep"
+"SW1,SW3,SW4","Tactile switch C&K PTS645VL58-2 LFS (PREV, NEXT, MENU)",6 mm right angle THT,3,3,0.44,1.32,buy,DigiKey,https://www.digikey.com/en/products/detail/c-k/PTS645VL58-2-LFS/1146769,Must be this part: the case caps are fitted to its actuator
+SW2,Tactile switch C&K PTS645SL50-2 LFS (PLAY),"6x6 mm THT, 5.0 mm tall",1,1,0.28,0.28,buy,DigiKey,https://www.digikey.com/en/products/detail/c-k/PTS645SL50-2-LFS/1146781,5.0 mm height matches the PLAY cap
+HW1,"M2 x 12 mm socket head cap screw, stainless","pack of 10, 4 used",1,1,1.44,1.44,buy,RobotShop,https://www.robotshop.com/products/3d-printing-canada-usa-stainless-steel-metric-thread-socket-head-cap-screw-10-pack-m2-12-mm,
+PCB,"Carrier PCB v2, 2 layers, 1.2 mm, 83 x 83 mm","JLCPCB, 5 boards minimum",1,1,2.00,2.00,buy,JLCPCB,https://jlcpcb.com/quote,$2 for 5 two-layer boards up to 100 x 100 mm; check the 1.2 mm option in the quote
+CASE,"Case v5 print: front shell, back shell, 4 caps",about 32 cm3 of material,1,1,12.00,12.00,buy (estimate),JLC3DP,https://jlc3dp.com/3d-printing-quote,Estimate; quote the STLs in CAD/
+SHIP-JLC,"Shipping, JLCPCB (PCB + case print in one parcel)",to Jakarta,1,1,8.00,8.00,buy (estimate),JLCPCB,https://jlcpcb.com/quote,"Estimate, Global Standard Direct Line"
+SHIP-LCSC,"Shipping, LCSC",to Jakarta,1,1,8.00,8.00,buy (estimate),LCSC,https://www.lcsc.com,Estimate
+SHIP-DK,"Shipping, DigiKey",to Jakarta,1,1,20.00,20.00,buy (estimate),DigiKey,https://www.digikey.com,Estimate
+SHIP-RS,"Shipping, RobotShop",to Jakarta,1,1,10.00,10.00,buy (estimate),RobotShop,https://www.robotshop.com,Estimate
+DUTY,Import duty and VAT,Indonesia,1,1,5.00,5.00,buy (estimate),-,,Estimate
+HW3,"Split ring 22 mm (keychain loop), optional",22 mm ID,1,10,0.9,9.00,optional,PetHardware,https://www.pethardware.com/en/split-rings/metal-key-ring-charm-5108/index.md,Minimum order 10; not counted in the totals
+TOTAL,"To buy (funding request), including shipping estimates",,,,,70.54,,,,
+TOTAL,Parts already owned (value),,,,,48.01,,,,
+TOTAL,Full cost of one device (owned + to buy),,,,,118.55,,,,
