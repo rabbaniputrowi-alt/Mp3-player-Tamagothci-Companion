@@ -2246,6 +2246,17 @@
 			(uuid "0b72ac94-9d57-422c-b055-4f351b90ec2f")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/3d/DFPlayer_Mini.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 		(layer "F.Cu")
@@ -2764,7 +2775,7 @@
 			(uuid "b026bcb8-a0f2-4aba-9e36-c62c756b5b63")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Button_Switch_THT.3dshapes/SW_PUSH_6mm.step"
+		(model "${KIPRJMOD}/3d/SW_Tactile_6x6x5mm_THT.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -3929,6 +3940,17 @@
 			(uuid "fa907eef-d0e9-4c01-a25f-02d26b6eebc7")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/3d/GY521_MPU6050.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 		(layer "F.Cu")
@@ -6403,17 +6425,6 @@
 			(uuid "10b6ba36-20cd-480d-b386-bae88840334e")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x03_P2.54mm_Vertical.step"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
 	)
 	(footprint "Diode_SMD:D_SMA"
 		(layer "F.Cu")
@@ -8207,6 +8218,17 @@
 			(uuid "4aa95143-1154-482c-9aaa-1be5bf080302")
 		)
 		(embedded_fonts no)
+		(model "${KIPRJMOD}/3d/RP2040_Zero.step"
+			(offset
+				(xyz 0 0 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 0)
+			)
+		)
 	)
 	(footprint "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
 		(layer "F.Cu")
@@ -8710,17 +8732,6 @@
 			(uuid "0c4adbbe-77a1-4e6e-a6ee-818d116f41b1")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Connector_PinHeader_2.00mm.3dshapes/PinHeader_2x04_P2.00mm_Vertical.step"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
 	)
 	(footprint "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
 		(layer "F.Cu")
